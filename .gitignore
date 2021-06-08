@@ -1,0 +1,6 @@
+# Build files
+build/
+
+# Library files
+lib/
+docs/
