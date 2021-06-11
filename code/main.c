@@ -2,11 +2,9 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <stdio.h>
-#include <stdint.h>
 
-typedef uint8_t bool;
-#define true 1
-#define false 0
+#include "types.h"
+#include "vecmath.h"
 
 static bool is_running = false;
 
@@ -27,6 +25,12 @@ int main(int argc, char* argv[]) {
             dest.y = 0;
             dest.w = 640;
             dest.h = 480;
+            
+            // Simple vector math test
+            v2 test_vec = vec2(10.0f, 15.0f);
+            test_vec = vec2_adds(test_vec, 3.0f);
+            test_vec = vec2_add(test_vec, vec2_left);
+            printf("%f, %f\n", test_vec.x, test_vec.y);
             
             // Main game loop
             is_running = true;
