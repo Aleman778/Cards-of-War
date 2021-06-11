@@ -1,4 +1,4 @@
-# gmtk-jam-2021
+# GMTK Game Jam 2021
 Our entry for the GMTK Jam 2021
 
 ## Dependencies
