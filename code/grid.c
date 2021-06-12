@@ -117,21 +117,25 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
             r.w = GRID_ELEM_WIDTH;
             r.h = GRID_ELEM_HEIGHT;
             
-            switch (grid->grid[x][y])
-            {
-                case GRID_NONE:
-                SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
-                SDL_RenderDrawRect(renderer, &r);
-                break;
-                case GRID_OBSTACLE:
-                SDL_SetRenderDrawColor(renderer, 32, 32, 32, 255);
-                SDL_RenderFillRect(renderer, &r);
+            
+            int tile_index = grid->grid[x][y];
+            if (tile_index > 0) {
+                tile_index--; // NOTE(alexander): tiled uses 0 as null tile, first tile is 1
+                
+                // Draw tile
+                SDL_Rect tr;
+                tr.x = (tile_index % (grid->tileset_width / 16)) * 16;
+                tr.y = (tile_index / (grid->tileset_width / 16)) * 16;
+                tr.w = 16;
+                tr.h = 16;
+                SDL_RenderCopy(renderer, grid->tileset, &tr, &r);
             }
+            
             
             for (int entityIndex = 0; entityIndex < MAX_ENTITIES; entityIndex++)
             {
                 entity_t* entity = &grid->entities[entityIndex];
-
+                
                 if (entity && entity->valid && (entity->underMouseCursor || entity->selected))
                 {
                     if (grid_pos_within_player_range(grid, entity, x, y))
@@ -160,7 +164,7 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
             entity_rect.y = entity->posY * GRID_ELEM_HEIGHT;
             entity_rect.w = GRID_ELEM_WIDTH;
             entity_rect.h = GRID_ELEM_HEIGHT;
-
+            
             if (entity->selected)
                 SDL_SetRenderDrawColor(renderer, 255, 200, 200, 255);
             else if (entity->underMouseCursor)
@@ -176,7 +180,7 @@ void grid_move_player(grid_t* grid, Input* input)
 {
     grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
     grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
-
+    
     for (int entityIndex = 0; entityIndex < MAX_ENTITIES; entityIndex++)
     {
         entity_t* entity = &grid->entities[entityIndex];
@@ -189,16 +193,16 @@ void grid_move_player(grid_t* grid, Input* input)
                 if (input->mouse.y > entity->posY * GRID_ELEM_HEIGHT && input->mouse.y < entity->posY * GRID_ELEM_HEIGHT + GRID_ELEM_HEIGHT)
                 {
                     entity->underMouseCursor = true;
-
+                    
                     bool anotherEntitySelected = false;
-                    for (int entityIndex = 0; entityIndex < MAX_ENTITIES; entityIndex++)
+                    for (int entityIndex2 = 0; entityIndex2 < MAX_ENTITIES; entityIndex2++)
                     {
-                        entity_t* entity = &grid->entities[entityIndex];
-
-                        if (entity && entity->valid && entity->selected)
+                        entity_t* entity2 = &grid->entities[entityIndex2];
+                        
+                        if (entity2 && entity2->valid && entity2->selected)
                             anotherEntitySelected = true;
                     }
-
+                    
                     if (!anotherEntitySelected)
                     {
                         memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
@@ -206,7 +210,7 @@ void grid_move_player(grid_t* grid, Input* input)
                     }
                 }
             }
-
+            
             if (button_was_pressed(&input->mouse_buttons[SDL_BUTTON_LEFT]))
             {
                 if (entity->underMouseCursor)
@@ -224,7 +228,7 @@ void grid_move_player(grid_t* grid, Input* input)
                         memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
                         grid_compute_reachable_positions(grid, entity->posX, entity->posY, PLAYER_MOVE_DISTANCE);
                     }
-
+                    
                     entity->selected = false;
                 }
             }

@@ -22,6 +22,7 @@ static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 
 #include "cards.c"
 #include "grid.c"
+#include "map.c"
 
 static bool is_running = false;
 
@@ -29,7 +30,7 @@ int main(int argc, char* argv[]) {
     (void) argc; // Unused variable, this statement can be removed when the variable has been used elsewhere
     (void) argv; // Unused variable, this statement can be removed when the variable has been used elsewhere
     (void) symbol_textures; // Unused variable, this statement can be removed when the variable has been used elsewhere
-
+    
     srand((int) time(0));
     
     SDL_SetMainReady();
@@ -49,14 +50,6 @@ int main(int argc, char* argv[]) {
             SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 
                                                         SDL_RENDERER_PRESENTVSYNC |
                                                         SDL_RENDERER_ACCELERATED);
-            
-            SDL_Texture* texture = IMG_LoadTexture(renderer, "assets/grass_tileset.bmp");
-            SDL_Rect dest;
-            dest.x = 0;
-            dest.y = 0;
-            dest.w = WINDOW_WIDTH;
-            dest.h = WINDOW_HEIGHT;
-            
             // Load font
             main_font = TTF_OpenFont("assets/fonts/dpcomic.ttf", 16);
             init_cards(renderer);
@@ -80,17 +73,22 @@ int main(int argc, char* argv[]) {
             zero_struct(entities);
             int num_entities = 0;
             grid.entities = entities;
-
-
+            
+            
             entity_t* player_1 = entity_init(&entities[num_entities++]);
             player_1->posX = GRID_SIZE_X / 2;
             player_1->posY = GRID_SIZE_Y / 2;
             grid.grid[player_1->posX][player_1->posY] = GRID_NONE;
-
+            
             entity_t* player_2 = entity_init(&entities[num_entities++]);
             player_2->posX = GRID_SIZE_X / 4;
             player_2->posY = GRID_SIZE_Y / 4;
             grid.grid[player_2->posX][player_2->posY] = GRID_NONE;
+            
+            // Load tilemap
+            read_tmx_map_data("assets/GMTK-1.tmx", grid.grid);
+            grid.tileset = IMG_LoadTexture(renderer, "assets/grass_tileset.png");
+            SDL_QueryTexture(grid.tileset, NULL, NULL, &grid.tileset_width, &grid.tileset_width);
             
             // Setup input
             Input input;
@@ -144,7 +142,6 @@ int main(int argc, char* argv[]) {
                 
                 // Rendering
                 SDL_RenderClear(renderer);
-                SDL_RenderCopy(renderer, texture, 0, &dest);
                 
                 grid_render(renderer, &grid);
                 

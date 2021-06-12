@@ -40,6 +40,10 @@ typedef struct
     entity_t* entities;
     int mouseGridX, mouseGridY;
     int move_type;
+    
+    SDL_Texture* tileset;
+    int tileset_width;
+    int tileset_height;
 } grid_t;
 
 #endif
