@@ -9,6 +9,7 @@
 static bool is_running = false;
 
 int main(int argc, char* argv[]) {
+    srand(time(0));
     SDL_SetMainReady();
     if (SDL_Init(SDL_INIT_VIDEO) >= 0) {
         SDL_Window* window = SDL_CreateWindow("GMTK Game Jam 2021",
@@ -17,7 +18,9 @@ int main(int argc, char* argv[]) {
                                               640, 480,
                                               SDL_WINDOW_SHOWN);
         if (window) {
-            SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+            SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 
+                                                        SDL_RENDERER_PRESENTVSYNC |
+                                                        SDL_RENDERER_ACCELERATED);
             
             SDL_Texture* texture = IMG_LoadTexture(renderer, "assets/grass_tileset.bmp");
             SDL_Rect dest;
