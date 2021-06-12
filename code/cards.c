@@ -79,10 +79,10 @@ draw_number(SDL_Renderer* renderer, int number, int x, int y) {
 
 
 void
-draw_card(SDL_Renderer* renderer, Card* card, int x, int y) { 
+draw_card(SDL_Renderer* renderer, Card* card, v2 pos) { 
     SDL_Rect base;
-    base.x = x;
-    base.y = y;
+    base.x = (s32) pos.x;
+    base.y = (s32) pos.y;
     base.w = CARD_WIDTH;
     base.h = CARD_HEIGHT;
     
@@ -127,13 +127,12 @@ draw_card(SDL_Renderer* renderer, Card* card, int x, int y) {
     }
 }
 
-
-int
-update_hand(player_t* player, int mouse_x, int mouse_y) {
-    //for (int card_index = 0; card_index < player->num_cards; card_index++) {
-    
-    //}
-    return 0;
+void
+update_player_hand(Player_Hand* player) {
+    int x_offset = (WINDOW_WIDTH - CARD_WIDTH * player->num_cards) / 2;
+    for (int card_index = 0; card_index < player->num_cards; card_index++) {
+        player->card_pos[card_index] = vec2((f32) (x_offset + CARD_WIDTH*card_index), 400.0f);
+    }
 }
 
 void
@@ -141,6 +140,6 @@ draw_player_cards(SDL_Renderer* renderer, Player_Hand* player) {
     int x_offset = (WINDOW_WIDTH - CARD_WIDTH * player->num_cards) / 2;
     for (int card_index = 0; card_index < player->num_cards; card_index++) {
         Card* card = &player->cards[card_index];
-        draw_card(renderer, card, x_offset + CARD_WIDTH*card_index, 400);
+        draw_card(renderer, card, player->card_pos[card_index]);
     }
 }

@@ -81,8 +81,7 @@ int main(int argc, char* argv[]) {
             
             // Setup input
             Input input;
-            input.mouse_x = 0;
-            input.mouse_x = 0;
+            input.mouse = vec2(0.0f, 0.0f);
             
             // Main game loop
             is_running = true;
@@ -98,7 +97,10 @@ int main(int argc, char* argv[]) {
                         } break;
                         
                         case SDL_MOUSEMOTION: {
-                            SDL_GetMouseState(&input.mouse_x, &input.mouse_y);
+                            int x, y;
+                            SDL_GetMouseState(&x, &y);
+                            input.mouse.x = (f32) x;
+                            input.mouse.y = (f32) y;
                         } break;
                         
                         case SDL_MOUSEBUTTONDOWN:
@@ -118,8 +120,11 @@ int main(int argc, char* argv[]) {
                     } 
                 }
                 
+                // Update player hand
+                update_player_hand(&player_hand);
+                
                 // Move player
-                if (input.mouse_x < GRID_ELEM_WIDTH * GRID_SIZE_X && input.mouse_y < GRID_ELEM_HEIGHT * GRID_SIZE_Y)
+                if (input.mouse.x < GRID_ELEM_WIDTH * GRID_SIZE_X && input.mouse.y < GRID_ELEM_HEIGHT * GRID_SIZE_Y)
                 {
                     grid_move_player(&grid, &input);
                 }

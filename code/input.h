@@ -5,8 +5,7 @@ typedef struct {
 } Input_Button;
 
 typedef struct {
-    s32 mouse_x;
-    s32 mouse_y;
+    v2 mouse;
     Input_Button mouse_buttons[6];
 } Input;
 

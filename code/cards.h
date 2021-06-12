@@ -30,6 +30,7 @@ typedef struct {
 
 typedef struct {
     Card cards[16];
+    v2 card_pos[16];
     int num_cards;
 } Player_Hand;
 

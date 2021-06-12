@@ -204,14 +204,14 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
 
 void grid_move_player(grid_t* grid, Input* input)
 {
-    grid->mouseGridX = input->mouse_x / GRID_ELEM_WIDTH;
-    grid->mouseGridY = input->mouse_y / GRID_ELEM_HEIGHT;
+    grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
+    grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
     if (grid->player)
     {
         grid->player->underMouseCursor = false;
-        if (input->mouse_x > grid->player->posX * GRID_ELEM_WIDTH && input->mouse_x < grid->player->posX * GRID_ELEM_WIDTH + GRID_ELEM_WIDTH)
+        if (input->mouse.x > grid->player->posX * GRID_ELEM_WIDTH && input->mouse.x < grid->player->posX * GRID_ELEM_WIDTH + GRID_ELEM_WIDTH)
         {
-            if (input->mouse_y > grid->player->posY * GRID_ELEM_HEIGHT && input->mouse_y < grid->player->posY * GRID_ELEM_HEIGHT + GRID_ELEM_HEIGHT)
+            if (input->mouse.y > grid->player->posY * GRID_ELEM_HEIGHT && input->mouse.y < grid->player->posY * GRID_ELEM_HEIGHT + GRID_ELEM_HEIGHT)
             {
                 grid->player->underMouseCursor = true;
             }
