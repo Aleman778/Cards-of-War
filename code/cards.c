@@ -128,7 +128,7 @@ draw_card(SDL_Renderer* renderer, Card* card, v2 pos) {
 }
 
 void
-update_player_hand(Player_Hand* player, Input* input, grid_t* grid, entity_t* entity) {
+update_player_hand(Player_Hand* player, Input* input, struct grid* grid, entity_t* entity) {
     int x_offset = (WINDOW_WIDTH - CARD_WIDTH * player->num_cards) / 2;
     for (int card_index = 0; card_index < player->num_cards; card_index++) {
         Card* card = &player->cards[card_index];

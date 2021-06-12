@@ -23,6 +23,7 @@ static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 #include "grid.c"
 #include "cards.c"
 #include "map.c"
+#include "entity.c"
 
 static bool is_running = false;
 
@@ -54,7 +55,7 @@ int main(int argc, char* argv[]) {
             main_font = TTF_OpenFont("assets/fonts/dpcomic.ttf", 16);
             init_cards(renderer);
             
-            grid_t grid;
+            struct grid grid;
             grid_init(&grid);
             
             // Player Hand

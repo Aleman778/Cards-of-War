@@ -1,3 +1,6 @@
+#ifndef vecmath_h_
+#define vecmath_h_
+
 #include <math.h>
 
 /***************************************************************************
@@ -158,3 +161,5 @@ v4 vec4(f32 x, f32 y, f32 z, f32 w) {
     result.w = w;
     return result;
 }
+
+#endif

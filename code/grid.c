@@ -5,9 +5,9 @@
 
 #include "grid.h"
 
-void grid_init(grid_t* grid)
+void grid_init(struct grid* grid)
 {
-    memset(grid, 0, sizeof(grid_t));
+    memset(grid, 0, sizeof(struct grid));
     //grid->grid[GRID_SIZE_X / 2][GRID_SIZE_Y / 2] = GRID_PLAYER;
 }
 
@@ -49,7 +49,7 @@ bool grid_pos_walkable(int grid_val)
     }
 }
 
-void grid_compute_reachable_positions(grid_t* grid, int x, int y, int max_distance)
+void grid_compute_reachable_positions(struct grid* grid, int x, int y, int max_distance)
 {
     if (max_distance < 0)
         return;
@@ -77,7 +77,7 @@ int signum(int x)
     return 0;
 }
 
-bool grid_pos_within_player_range(grid_t* grid, entity_t* player, int gridX, int gridY)
+bool grid_pos_within_player_range(struct grid* grid, entity_t* player, int gridX, int gridY)
 {
     if (gridX >= GRID_SIZE_X || gridY >= GRID_SIZE_Y)
         return false;
@@ -116,7 +116,7 @@ bool grid_pos_within_player_range(grid_t* grid, entity_t* player, int gridX, int
     return false;
 }
 
-void grid_render(SDL_Renderer* renderer, grid_t* grid)
+void grid_render(SDL_Renderer* renderer, struct grid* grid)
 {
     
     SDL_Rect grid_border;
@@ -200,7 +200,7 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
 }
 
 void 
-grid_move_player(grid_t* grid, Input* input, Player_Hand* player, entity_t* entity) {
+grid_move_player(struct grid* grid, Input* input, Player_Hand* player, entity_t* entity) {
     grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
     grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
     
@@ -212,6 +212,14 @@ grid_move_player(grid_t* grid, Input* input, Player_Hand* player, entity_t* enti
                 grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
                 entity->posX = grid->mouseGridX;
                 entity->posY = grid->mouseGridY;
+
+                for (int i = 0; i < MAX_ENTITIES; i++)
+                {
+                    entity_t* enemy = &grid->entities[i];
+
+                    if (enemy && enemy->valid && !enemy->playerControlled)
+                        enemy_perform_random_move(enemy, grid);
+                }
             }
             
             entity->selected = false;
@@ -220,7 +228,7 @@ grid_move_player(grid_t* grid, Input* input, Player_Hand* player, entity_t* enti
     }
 }
 
-void grid_move_player_old(grid_t* grid, Input* input)
+void grid_move_player_old(struct grid* grid, Input* input)
 {
     grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
     grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
@@ -269,6 +277,15 @@ void grid_move_player_old(grid_t* grid, Input* input)
                     {
                         entity->posX = grid->mouseGridX;
                         entity->posY = grid->mouseGridY;
+
+                        for (int i = 0; i < MAX_ENTITIES; i++)
+                        {
+                            entity_t* enemy = &grid->entities[i];
+
+                            if (enemy && enemy->valid && !enemy->playerControlled)
+                                enemy_perform_random_move(enemy, grid);
+                        }
+
                         memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
                         grid_compute_reachable_positions(grid, entity->posX, entity->posY, PLAYER_MOVE_DISTANCE);
                     }

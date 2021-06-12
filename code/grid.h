@@ -11,6 +11,7 @@
 
 
 #include "entity.h"
+#include "vecmath.h"
 
 enum move_type
 {
@@ -26,7 +27,7 @@ typedef struct
     int x, y;
 } grid_pos_t;
 
-typedef struct
+struct grid
 {
     int grid[GRID_SIZE_X][GRID_SIZE_Y];
     int valid_move_positions[GRID_SIZE_X][GRID_SIZE_Y];
@@ -37,6 +38,11 @@ typedef struct
     SDL_Texture* tileset;
     int tileset_width;
     int tileset_height;
-} grid_t;
+};
+
+v2 index_to_pos(int index, int xdim)
+{
+    return vec2(index % xdim, index / xdim);
+}
 
 #endif
