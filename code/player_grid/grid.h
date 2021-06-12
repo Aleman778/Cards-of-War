@@ -38,16 +38,16 @@ void grid_init(grid_t* grid)
 
 void grid_render(SDL_Renderer* renderer, grid_t* grid, player_t* player)
 {
-
+    
     SDL_Rect grid_border;
     grid_border.x = 0;
     grid_border.y = 0;
     grid_border.w = GRID_ELEM_WIDTH * GRID_SIZE_X;
     grid_border.h = GRID_ELEM_HEIGHT * GRID_SIZE_Y;
-
+    
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDrawRect(renderer, &grid_border);
-
+    
     for (int x = 0; x < GRID_SIZE_X; x++)
     {
         for (int y = 0; y < GRID_SIZE_Y; y++)
@@ -57,17 +57,17 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid, player_t* player)
             r.y = y * GRID_ELEM_HEIGHT;
             r.w = GRID_ELEM_WIDTH;
             r.h = GRID_ELEM_HEIGHT;
-
+            
             switch (grid->grid[x][y])
             {
                 case GRID_NONE:
-                    SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
-                    SDL_RenderDrawRect(renderer, &r);
-                    break;
+                SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
+                SDL_RenderDrawRect(renderer, &r);
+                break;
             }
         }
     }
-
+    
     if (player)
     {
         SDL_Rect player_rect;
@@ -75,11 +75,11 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid, player_t* player)
         player_rect.y = player->posY * GRID_ELEM_HEIGHT;
         player_rect.w = GRID_ELEM_WIDTH;
         player_rect.h = GRID_ELEM_HEIGHT;
-
+        
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderFillRect(renderer, &player_rect);
-
-
+        
+        
         for (int x = fmax(player->posX - PLAYER_MOVE_DISTANCE, 0); x <= fmin(player->posX + PLAYER_MOVE_DISTANCE, GRID_SIZE_X); x++)
         {
             for (int y = fmax(player->posY - PLAYER_MOVE_DISTANCE, 0); y <= fmin(player->posY + PLAYER_MOVE_DISTANCE, GRID_SIZE_Y); y++)
@@ -91,7 +91,7 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid, player_t* player)
                     r2.y = y * GRID_ELEM_HEIGHT;
                     r2.w = GRID_ELEM_WIDTH;
                     r2.h = GRID_ELEM_HEIGHT;
-
+                    
                     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
                     SDL_RenderDrawRect(renderer, &r2);
                 }
