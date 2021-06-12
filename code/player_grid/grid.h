@@ -64,6 +64,8 @@ bool grid_pos_within_player_range(grid_t* grid, int gridX, int gridY)
             return grid->player->posY == gridY;
             break;
     }
+
+    return false;
 }
 
 void grid_render(SDL_Renderer* renderer, grid_t* grid)
