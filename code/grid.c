@@ -189,8 +189,21 @@ void grid_move_player(grid_t* grid, Input* input)
                 if (input->mouse.y > entity->posY * GRID_ELEM_HEIGHT && input->mouse.y < entity->posY * GRID_ELEM_HEIGHT + GRID_ELEM_HEIGHT)
                 {
                     entity->underMouseCursor = true;
-                    memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
-                    grid_compute_reachable_positions(grid, entity->posX, entity->posY, PLAYER_MOVE_DISTANCE);
+
+                    bool anotherEntitySelected = false;
+                    for (int entityIndex = 0; entityIndex < MAX_ENTITIES; entityIndex++)
+                    {
+                        entity_t* entity = &grid->entities[entityIndex];
+
+                        if (entity && entity->valid && entity->selected)
+                            anotherEntitySelected = true;
+                    }
+
+                    if (!anotherEntitySelected)
+                    {
+                        memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
+                        grid_compute_reachable_positions(grid, entity->posX, entity->posY, PLAYER_MOVE_DISTANCE);
+                    }
                 }
             }
 
