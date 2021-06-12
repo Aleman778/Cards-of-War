@@ -3,6 +3,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <time.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 #define WINDOW_WIDTH 640
@@ -11,37 +12,14 @@
 static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 
 #include "types.h"
-//#include "vecmath.h"
 #include "cards.h"
 #include "player_grid/player.h"
+#include "input.h"
 
 #include "cards.c"
-#include "player_grid/grid.h"
+#include "player_grid/grid.c"
 
 static bool is_running = false;
-
-typedef struct {
-    u32 num_half_transitions;
-    b32 ended_down;
-} Input_Button;
-
-typedef struct {
-    s32 mouse_x;
-    s32 mouse_y;
-    Input_Button mouse_buttons[6];
-} Input;
-
-b32
-button_was_pressed(Input_Button* input) {
-    return (input->num_half_transitions > 2 || 
-            (input->num_half_transitions == 1 && !input->ended_down));
-}
-
-b32
-button_is_down(Input_Button* input) {
-    return input->ended_down;
-}
-
 
 int main(int argc, char* argv[]) {
     srand((int) time(0));
@@ -77,7 +55,7 @@ int main(int argc, char* argv[]) {
             
             grid_t grid;
             grid_init(&grid);
-
+            
             grid_random_fill(&grid);
             
             player_t player;
@@ -122,7 +100,8 @@ int main(int argc, char* argv[]) {
                             SDL_GetMouseState(&input.mouse_x, &input.mouse_y);
                         } break;
                         
-                        case SDL_MOUSEBUTTONDOWN: {
+                        case SDL_MOUSEBUTTONDOWN:
+                        case SDL_MOUSEBUTTONUP: {
                             SDL_MouseButtonEvent mouse = event.button;
                             if ((u32) mouse.button < array_count(input.mouse_buttons)) {
                                 input.mouse_buttons[mouse.button].num_half_transitions++;
@@ -137,6 +116,13 @@ int main(int argc, char* argv[]) {
                         } break;
                     } 
                 }
+                
+                // Move player
+                if (input.mouse_x < GRID_ELEM_WIDTH * GRID_SIZE_X && input.mouse_y < GRID_ELEM_HEIGHT * GRID_SIZE_Y)
+                {
+                    grid_move_player(&grid, &input);
+                }
+                
                 // Rendering
                 SDL_RenderClear(renderer);
                 SDL_RenderCopy(renderer, texture, 0, &dest);
