@@ -27,6 +27,7 @@ enum grid_objects
 typedef struct
 {
     int grid[GRID_SIZE_X][GRID_SIZE_Y];
+    player_t* player;
 } grid_t;
 
 
@@ -36,7 +37,7 @@ void grid_init(grid_t* grid)
     //grid->grid[GRID_SIZE_X / 2][GRID_SIZE_Y / 2] = GRID_PLAYER;
 }
 
-void grid_render(SDL_Renderer* renderer, grid_t* grid, player_t* player)
+void grid_render(SDL_Renderer* renderer, grid_t* grid)
 {
     
     SDL_Rect grid_border;
@@ -68,33 +69,56 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid, player_t* player)
         }
     }
     
-    if (player)
+    if (grid->player)
     {
+        player_t* player = grid->player;
+
         SDL_Rect player_rect;
         player_rect.x = player->posX * GRID_ELEM_WIDTH;
         player_rect.y = player->posY * GRID_ELEM_HEIGHT;
         player_rect.w = GRID_ELEM_WIDTH;
         player_rect.h = GRID_ELEM_HEIGHT;
         
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        if (player->underMouseCursor)
+            SDL_SetRenderDrawColor(renderer, 255, 128, 128, 255);
+        else
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderFillRect(renderer, &player_rect);
         
         
-        for (int x = fmax(player->posX - PLAYER_MOVE_DISTANCE, 0); x <= fmin(player->posX + PLAYER_MOVE_DISTANCE, GRID_SIZE_X); x++)
+        if (player->underMouseCursor)
         {
-            for (int y = fmax(player->posY - PLAYER_MOVE_DISTANCE, 0); y <= fmin(player->posY + PLAYER_MOVE_DISTANCE, GRID_SIZE_Y); y++)
+            for (int x = fmax(player->posX - PLAYER_MOVE_DISTANCE, 0); x <= fmin(player->posX + PLAYER_MOVE_DISTANCE, GRID_SIZE_X); x++)
             {
-                if (abs(player->posX - x) + abs(player->posY - y) <= PLAYER_MOVE_DISTANCE && grid->grid[x][y] == GRID_NONE)
+                for (int y = fmax(player->posY - PLAYER_MOVE_DISTANCE, 0); y <= fmin(player->posY + PLAYER_MOVE_DISTANCE, GRID_SIZE_Y); y++)
                 {
-                    SDL_Rect r2;
-                    r2.x = x * GRID_ELEM_WIDTH;
-                    r2.y = y * GRID_ELEM_HEIGHT;
-                    r2.w = GRID_ELEM_WIDTH;
-                    r2.h = GRID_ELEM_HEIGHT;
-                    
-                    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
-                    SDL_RenderDrawRect(renderer, &r2);
+                    if (abs(player->posX - x) + abs(player->posY - y) <= PLAYER_MOVE_DISTANCE && grid->grid[x][y] == GRID_NONE)
+                    {
+                        SDL_Rect r2;
+                        r2.x = x * GRID_ELEM_WIDTH;
+                        r2.y = y * GRID_ELEM_HEIGHT;
+                        r2.w = GRID_ELEM_WIDTH;
+                        r2.h = GRID_ELEM_HEIGHT;
+
+                        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+                        SDL_RenderDrawRect(renderer, &r2);
+                    }
                 }
+            }
+        }
+    }
+}
+
+void grid_onmouseevent(grid_t* grid, int x, int y)
+{
+    if (grid->player)
+    {
+        grid->player->underMouseCursor = false;
+        if (x > grid->player->posX * GRID_ELEM_WIDTH && x < grid->player->posX * GRID_ELEM_WIDTH + GRID_ELEM_WIDTH)
+        {
+            if (y > grid->player->posY * GRID_ELEM_HEIGHT && y < grid->player->posY * GRID_ELEM_HEIGHT + GRID_ELEM_HEIGHT)
+            {
+                grid->player->underMouseCursor = true;
             }
         }
     }

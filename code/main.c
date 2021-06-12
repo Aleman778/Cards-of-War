@@ -85,6 +85,8 @@ int main(int argc, char* argv[]) {
             player_init(&player);
             player.posX = GRID_SIZE_X / 2;
             player.posY = GRID_SIZE_Y / 2;
+
+            grid.player = &player;
             
             // Main game loop
             is_running = true;
@@ -94,12 +96,21 @@ int main(int argc, char* argv[]) {
                     if (event.type == SDL_QUIT) {
                         is_running = false;
                     }
+                    else if (event.type == SDL_MOUSEMOTION)
+                    {
+                        int x, y;
+                        SDL_GetMouseState(&x, &y);
+                        if (x < GRID_ELEM_WIDTH * GRID_SIZE_X && y < GRID_ELEM_HEIGHT * GRID_SIZE_Y)
+                        {
+                            grid_onmouseevent(&grid, x, y);
+                        }
+                    }
                 }
                 // Rendering
                 SDL_RenderClear(renderer);
                 SDL_RenderCopy(renderer, texture, 0, &dest);
                 
-                grid_render(renderer, &grid, &player);
+                grid_render(renderer, &grid);
                 
                 //SDL_RenderCopy(renderer, texture, 0, &dest);
                 SDL_RenderCopy(renderer, Message, NULL, &Message_rect);

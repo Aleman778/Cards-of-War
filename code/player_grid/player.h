@@ -12,12 +12,14 @@ typedef struct
 {
     int posX;
     int posY;
+    bool underMouseCursor;
 } player_t;
 
 void player_init(player_t* player)
 {
     player->posX = 0;
     player->posY = 0;
+    player->underMouseCursor = false;
 }
 
 #endif
