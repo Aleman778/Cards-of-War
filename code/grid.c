@@ -37,6 +37,9 @@ bool grid_pos_walkable(int grid_val)
     case 20:
     case 21:
     case 22:
+    case 28:
+    case 29:
+    case 30:
     case 31:
         return true;
         break;
