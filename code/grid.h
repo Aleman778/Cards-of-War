@@ -12,13 +12,6 @@
 
 #include "entity.h"
 
-enum grid_objects
-{
-    GRID_NONE,
-    //GRID_PLAYER,
-    GRID_OBSTACLE,
-};
-
 enum move_type
 {
     MOVE_TYPE_BREADTH_FIRST,

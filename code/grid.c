@@ -1,8 +1,13 @@
+#include <SDL.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "grid.h"
 
 void grid_init(grid_t* grid)
 {
-    memset(grid, GRID_NONE, sizeof(grid_t));
+    memset(grid, 0, sizeof(grid_t));
     //grid->grid[GRID_SIZE_X / 2][GRID_SIZE_Y / 2] = GRID_PLAYER;
 }
 
@@ -16,15 +21,29 @@ int grid_limit_y(int y)
     return (int)  fmax(0, fmin(GRID_SIZE_Y - 1, y));
 }
 
-void grid_random_fill(grid_t* grid)
+bool grid_pos_walkable(int grid_val)
 {
-    for (int x = 0; x < GRID_SIZE_X; x++)
+    switch (grid_val)
     {
-        for (int y = 0; y < GRID_SIZE_Y; y++)
-        {
-            if (rand() % 100 < 20)
-                grid->grid[x][y] = GRID_OBSTACLE;
-        }
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 19:
+    case 20:
+    case 21:
+    case 22:
+    case 31:
+        return true;
+        break;
+
+    default:
+        return false;
+        break;
     }
 }
 
@@ -33,7 +52,7 @@ void grid_compute_reachable_positions(grid_t* grid, int x, int y, int max_distan
     if (max_distance < 0)
         return;
     
-    if (grid->grid[x][y] != GRID_NONE)
+    if (!grid_pos_walkable(grid->grid[x][y]))
     {
         grid->valid_move_positions[x][y] = 0;
         return;
@@ -64,7 +83,7 @@ bool grid_pos_within_player_range(grid_t* grid, entity_t* player, int gridX, int
     switch (grid->move_type)
     {
         case MOVE_TYPE_IGNORE_OBSTACLES: {
-            return abs(player->posX - gridX) + abs(player->posY - gridY) <= PLAYER_MOVE_DISTANCE && grid->grid[gridX][gridY] == GRID_NONE;
+            return abs(player->posX - gridX) + abs(player->posY - gridY) <= PLAYER_MOVE_DISTANCE && grid_pos_walkable(grid->grid[gridX][gridY]);
         } break;
         case MOVE_TYPE_HORIZONTAL: {
             if (player->posY != gridY)
@@ -72,20 +91,20 @@ bool grid_pos_within_player_range(grid_t* grid, entity_t* player, int gridX, int
             
             for (int x = player->posX; x != gridX; x += signum(gridX - player->posX))
             {
-                if (grid->grid[x][gridY] != GRID_NONE)
+                if (!grid_pos_walkable(grid->grid[x][gridY]))
                     return false;
             }
-            return grid->grid[gridX][gridY] == GRID_NONE;
+            return grid_pos_walkable(grid->grid[gridX][gridY]);
         } break;
         case MOVE_TYPE_VERTICAL: {
             if (player->posX != gridX)
                 return false;
             for (int y = player->posY; y != gridY; y += signum(gridY - player->posY))
             {
-                if (grid->grid[gridX][y] != GRID_NONE)
+                if (!grid_pos_walkable(grid->grid[gridX][y]))
                     return false;
             }
-            return grid->grid[gridX][gridY] == GRID_NONE;
+            return grid_pos_walkable(grid->grid[gridX][gridY]);
         } break;
         case MOVE_TYPE_BREADTH_FIRST: {
             return grid->valid_move_positions[gridX][gridY] > 0;

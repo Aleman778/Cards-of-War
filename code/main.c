@@ -57,8 +57,6 @@ int main(int argc, char* argv[]) {
             grid_t grid;
             grid_init(&grid);
             
-            grid_random_fill(&grid);
-            
             // Player Hand
             Player_Hand player_hand;
             zero_struct(player_hand);
@@ -76,14 +74,12 @@ int main(int argc, char* argv[]) {
             
             
             entity_t* player_1 = entity_init(&entities[num_entities++]);
-            player_1->posX = GRID_SIZE_X / 2;
-            player_1->posY = GRID_SIZE_Y / 2;
-            grid.grid[player_1->posX][player_1->posY] = GRID_NONE;
+            player_1->posX = 1;
+            player_1->posY = 1;
             
             entity_t* player_2 = entity_init(&entities[num_entities++]);
-            player_2->posX = GRID_SIZE_X / 4;
-            player_2->posY = GRID_SIZE_Y / 4;
-            grid.grid[player_2->posX][player_2->posY] = GRID_NONE;
+            player_2->posX = 12;
+            player_2->posY = 1;
             
             // Load tilemap
             read_tmx_map_data("assets/GMTK-1.tmx", grid.grid);
