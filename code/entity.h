@@ -30,6 +30,7 @@ entity_t* entity_init(entity_t* entity)
 
 struct grid;
 
+void enemy_random_chase_move(entity_t* enemy, entity_t* player, struct grid* grid);
 void enemy_perform_random_move(entity_t* enemy, struct grid* grid);
 void render_entity(SDL_Renderer* renderer, entity_t* entity);
 

@@ -26,6 +26,7 @@ bool grid_pos_walkable(int grid_val)
 {
     switch (grid_val)
     {
+        case 1:
         case 2:
         case 3:
         case 4:
@@ -205,7 +206,7 @@ grid_move_player(struct grid* grid, Input* input, Player_Hand* player, entity_t*
                     entity_t* enemy = &grid->entities[i];
 
                     if (enemy && enemy->valid && !enemy->playerControlled)
-                        enemy_perform_random_move(enemy, grid);
+                        enemy_random_chase_move(enemy, &grid->entities[0], grid);
                 }
             }
             

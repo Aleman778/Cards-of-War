@@ -4,12 +4,53 @@
 #include "grid.h"
 #include "vecmath.h"
 
-/*
-void enemy_take_best_action(entity_t* enemy, entity_t* player, struct grid* grid)
+// Attempt to move closer to the player
+void enemy_random_chase_move(entity_t* enemy, entity_t* player, struct grid* grid)
 {
-    // Maybe implement some logic here later?
+    memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
+    grid_compute_reachable_positions(grid, enemy->posX, enemy->posY, PLAYER_MOVE_DISTANCE);
+    bool hasMoved = false;
+
+    for (int i = 0; i < 500; i++)
+    {
+        int x = rand() % GRID_SIZE_X;
+        int y = rand() % GRID_SIZE_Y;
+
+        if (grid->valid_move_positions[x][y] && !(x == enemy->posX && y == enemy->posY))
+        {
+            v2 movePos = vec2(x, y);
+            v2 pos = vec2(enemy->posX, enemy->posY);
+            v2 playerPos = vec2(player->posX, player->posY);
+
+            if (vec2_length_sq(vec2_sub(movePos, playerPos)) > vec2_length_sq(vec2_sub(pos, playerPos)))
+                continue;
+
+            enemy->posX = movePos.x;
+            enemy->posY = movePos.y;
+
+            hasMoved = true;
+            break;
+        }
+    }
+
+    if (!hasMoved)
+    {
+        for (int i = 0; i < 500; i++)
+        {
+            int x = rand() % GRID_SIZE_X;
+            int y = rand() % GRID_SIZE_Y;
+
+            if (grid->valid_move_positions[x][y])
+            {
+                enemy->posX = x;
+                enemy->posY = y;
+
+                break;
+            }
+        }
+    }
 }
-*/
+
 
 void enemy_perform_random_move(entity_t* enemy, struct grid* grid)
 {
