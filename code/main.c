@@ -57,6 +57,8 @@ int main(int argc, char* argv[]) {
             
             grid_t grid;
             grid_init(&grid);
+
+            grid_random_fill(&grid);
             
             Card card;
             card.type = CardType_Movement_Horizontal;
@@ -69,6 +71,8 @@ int main(int argc, char* argv[]) {
             player.posY = GRID_SIZE_Y / 2;
 
             grid.player = &player;
+            memset(grid.valid_move_positions, 0, sizeof(grid.valid_move_positions));
+            grid_compute_reachable_positions(&grid, player.posX, player.posY, PLAYER_MOVE_DISTANCE);
             
             // Main game loop
             is_running = true;
