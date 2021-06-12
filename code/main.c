@@ -19,6 +19,7 @@ static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 
 #include "cards.c"
 #include "player_grid/grid.c"
+#include "map.c"
 
 static bool is_running = false;
 
@@ -42,14 +43,6 @@ int main(int argc, char* argv[]) {
             SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 
                                                         SDL_RENDERER_PRESENTVSYNC |
                                                         SDL_RENDERER_ACCELERATED);
-            
-            SDL_Texture* texture = IMG_LoadTexture(renderer, "assets/grass_tileset.bmp");
-            SDL_Rect dest;
-            dest.x = 0;
-            dest.y = 0;
-            dest.w = WINDOW_WIDTH;
-            dest.h = WINDOW_HEIGHT;
-            
             // Load font
             main_font = TTF_OpenFont("assets/fonts/dpcomic.ttf", 16);
             init_cards(renderer);
@@ -78,6 +71,9 @@ int main(int argc, char* argv[]) {
             grid.grid[player.posX][player.posY] = GRID_NONE;
             memset(grid.valid_move_positions, 0, sizeof(grid.valid_move_positions));
             grid_compute_reachable_positions(&grid, player.posX, player.posY, PLAYER_MOVE_DISTANCE);
+            read_tmx_map_data("assets/GMTK-1.tmx", grid.grid);
+            grid.tileset = IMG_LoadTexture(renderer, "assets/grass_tileset.png");
+            SDL_QueryTexture(grid.tileset, NULL, NULL, &grid.tileset_width, &grid.tileset_width);
             
             // Setup input
             Input input;
@@ -131,7 +127,6 @@ int main(int argc, char* argv[]) {
                 
                 // Rendering
                 SDL_RenderClear(renderer);
-                SDL_RenderCopy(renderer, texture, 0, &dest);
                 
                 grid_render(renderer, &grid);
                 

@@ -35,6 +35,9 @@ typedef struct
     player_t* player;
     int mouseGridX, mouseGridY;
     int move_type;
+    SDL_Texture* tileset;
+    int tileset_width;
+    int tileset_height;
 } grid_t;
 
 
@@ -155,28 +158,30 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
             r.w = GRID_ELEM_WIDTH;
             r.h = GRID_ELEM_HEIGHT;
             
-            switch (grid->grid[x][y])
-            {
-                case GRID_NONE:
-                SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
-                SDL_RenderDrawRect(renderer, &r);
-                break;
-                case GRID_OBSTACLE:
-                SDL_SetRenderDrawColor(renderer, 32, 32, 32, 255);
-                SDL_RenderFillRect(renderer, &r);
-            }
-            
-            if (grid->player && (grid->player->underMouseCursor || grid->player->selected))
-            {
-                if (grid_pos_within_player_range(grid, x, y))
+            // Draw tile
+            int tile_index = grid->grid[x][y];
+            if (tile_index > 0) {
+                tile_index--; // NOTE(alexander): tiled uses 0 as null tile, first tile is 1
+                
+                SDL_Rect tr;
+                tr.x = (tile_index * 16) / grid->tileset_width;
+                tr.y = (tile_index * 16) % grid->tileset_width;
+                tr.w = 16;
+                tr.h = 16;
+                SDL_RenderCopy(renderer, grid->tileset, &tr, &r);
+                
+                if (grid->player && (grid->player->underMouseCursor || grid->player->selected))
                 {
-                    if (grid->player->selected)
-                        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-                    else
-                        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
-                    SDL_RenderDrawRect(renderer, &r);
-                    if (grid->player->selected && x == grid->mouseGridX && y == grid->mouseGridY)
-                        SDL_RenderFillRect(renderer, &r);
+                    if (grid_pos_within_player_range(grid, x, y))
+                    {
+                        if (grid->player->selected)
+                            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 60);
+                        else
+                            SDL_SetRenderDrawColor(renderer, 200, 200, 200, 60);
+                        SDL_RenderDrawRect(renderer, &r);
+                        if (grid->player->selected && x == grid->mouseGridX && y == grid->mouseGridY)
+                            SDL_RenderFillRect(renderer, &r);
+                    }
                 }
             }
         }
