@@ -12,6 +12,7 @@
 static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 
 #include "types.h"
+#include "vecmath.h"
 #include "cards.h"
 #include "player_grid/player.h"
 #include "input.h"

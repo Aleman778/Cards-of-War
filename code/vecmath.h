@@ -109,7 +109,7 @@ f32 vec2_length_sq(v2 v) {
 }
 
 f32 vec2_length(v2 v) {
-    return sqrt(vec2_length_sq(v)); // TODO(alexander): replace sqrtf with own implementation
+    return sqrtf(vec2_length_sq(v)); // TODO(alexander): replace sqrtf with own implementation
 }
 
 v2 vec2_normalize(v2 v) {
