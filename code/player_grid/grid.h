@@ -24,11 +24,20 @@ enum grid_objects
     //GRID_PLAYER,
 };
 
+enum move_type
+{
+    MOVE_TYPE_MAX_DIST,
+    MOVE_TYPE_HORIZONTAL,
+    MOVE_TYPE_VERTICAL,
+    MOVE_TYPE_MAX,
+};
+
 typedef struct
 {
     int grid[GRID_SIZE_X][GRID_SIZE_Y];
     player_t* player;
     int mouseGridX, mouseGridY;
+    int move_type;
 } grid_t;
 
 
@@ -42,7 +51,19 @@ bool grid_pos_within_player_range(grid_t* grid, int gridX, int gridY)
 {
     if (gridX >= GRID_SIZE_X || gridY >= GRID_SIZE_Y)
         return false;
-    return abs(grid->player->posX - gridX) + abs(grid->player->posY - gridY) <= PLAYER_MOVE_DISTANCE && grid->grid[gridX][gridY] == GRID_NONE;
+
+    switch (grid->move_type)
+    {
+        case MOVE_TYPE_MAX_DIST:
+            return abs(grid->player->posX - gridX) + abs(grid->player->posY - gridY) <= PLAYER_MOVE_DISTANCE && grid->grid[gridX][gridY] == GRID_NONE;
+            break;
+        case MOVE_TYPE_HORIZONTAL:
+            return grid->player->posX == gridX;
+            break;
+        case MOVE_TYPE_VERTICAL:
+            return grid->player->posY == gridY;
+            break;
+    }
 }
 
 void grid_render(SDL_Renderer* renderer, grid_t* grid)
@@ -70,9 +91,23 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
             switch (grid->grid[x][y])
             {
                 case GRID_NONE:
-                SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
-                SDL_RenderDrawRect(renderer, &r);
-                break;
+                    SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
+                    SDL_RenderDrawRect(renderer, &r);
+                    break;
+            }
+
+            if (grid->player && (grid->player->underMouseCursor || grid->player->selected))
+            {
+                if (grid_pos_within_player_range(grid, x, y))
+                {
+                    if (grid->player->selected)
+                        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+                    else
+                        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+                    SDL_RenderDrawRect(renderer, &r);
+                    if (grid->player->selected && x == grid->mouseGridX && y == grid->mouseGridY)
+                        SDL_RenderFillRect(renderer, &r);
+                }
             }
         }
     }
@@ -94,33 +129,6 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
         else
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderFillRect(renderer, &player_rect);
-        
-        
-        if (player->underMouseCursor || player->selected)
-        {
-            for (int x = fmax(player->posX - PLAYER_MOVE_DISTANCE, 0); x <= fmin(player->posX + PLAYER_MOVE_DISTANCE, GRID_SIZE_X); x++)
-            {
-                for (int y = fmax(player->posY - PLAYER_MOVE_DISTANCE, 0); y <= fmin(player->posY + PLAYER_MOVE_DISTANCE, GRID_SIZE_Y); y++)
-                {
-                    if (grid_pos_within_player_range(grid, x, y))
-                    {
-                        SDL_Rect r2;
-                        r2.x = x * GRID_ELEM_WIDTH;
-                        r2.y = y * GRID_ELEM_HEIGHT;
-                        r2.w = GRID_ELEM_WIDTH;
-                        r2.h = GRID_ELEM_HEIGHT;
-
-                        if (player->selected)
-                            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-                        else
-                            SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
-                        SDL_RenderDrawRect(renderer, &r2);
-                        if (player->selected && x == grid->mouseGridX && y == grid->mouseGridY)
-                            SDL_RenderFillRect(renderer, &r2);
-                    }
-                }
-            }
-        }
     }
 }
 

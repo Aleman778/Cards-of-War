@@ -105,6 +105,10 @@ int main(int argc, char* argv[]) {
                             grid_onmouseevent(&grid, x, y, event.type);
                         }
                     }
+                    else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_a)
+                    {
+                        grid.move_type = (grid.move_type + 1) % MOVE_TYPE_MAX; // Temporary way of switching movement types, should be done through cards later
+                    }
                 }
                 // Rendering
                 SDL_RenderClear(renderer);
