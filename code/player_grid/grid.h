@@ -28,6 +28,7 @@ typedef struct
 {
     int grid[GRID_SIZE_X][GRID_SIZE_Y];
     player_t* player;
+    int mouseGridX, mouseGridY;
 } grid_t;
 
 
@@ -35,6 +36,13 @@ void grid_init(grid_t* grid)
 {
     memset(grid, GRID_NONE, sizeof(grid_t));
     //grid->grid[GRID_SIZE_X / 2][GRID_SIZE_Y / 2] = GRID_PLAYER;
+}
+
+bool grid_pos_within_player_range(grid_t* grid, int gridX, int gridY)
+{
+    if (gridX >= GRID_SIZE_X || gridY >= GRID_SIZE_Y)
+        return false;
+    return abs(grid->player->posX - gridX) + abs(grid->player->posY - gridY) <= PLAYER_MOVE_DISTANCE && grid->grid[gridX][gridY] == GRID_NONE;
 }
 
 void grid_render(SDL_Renderer* renderer, grid_t* grid)
@@ -79,20 +87,22 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
         player_rect.w = GRID_ELEM_WIDTH;
         player_rect.h = GRID_ELEM_HEIGHT;
         
-        if (player->underMouseCursor)
+        if (player->selected)
+            SDL_SetRenderDrawColor(renderer, 255, 200, 200, 255);
+        else if (player->underMouseCursor)
             SDL_SetRenderDrawColor(renderer, 255, 128, 128, 255);
         else
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderFillRect(renderer, &player_rect);
         
         
-        if (player->underMouseCursor)
+        if (player->underMouseCursor || player->selected)
         {
             for (int x = fmax(player->posX - PLAYER_MOVE_DISTANCE, 0); x <= fmin(player->posX + PLAYER_MOVE_DISTANCE, GRID_SIZE_X); x++)
             {
                 for (int y = fmax(player->posY - PLAYER_MOVE_DISTANCE, 0); y <= fmin(player->posY + PLAYER_MOVE_DISTANCE, GRID_SIZE_Y); y++)
                 {
-                    if (abs(player->posX - x) + abs(player->posY - y) <= PLAYER_MOVE_DISTANCE && grid->grid[x][y] == GRID_NONE)
+                    if (grid_pos_within_player_range(grid, x, y))
                     {
                         SDL_Rect r2;
                         r2.x = x * GRID_ELEM_WIDTH;
@@ -100,8 +110,13 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
                         r2.w = GRID_ELEM_WIDTH;
                         r2.h = GRID_ELEM_HEIGHT;
 
-                        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+                        if (player->selected)
+                            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+                        else
+                            SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
                         SDL_RenderDrawRect(renderer, &r2);
+                        if (player->selected && x == grid->mouseGridX && y == grid->mouseGridY)
+                            SDL_RenderFillRect(renderer, &r2);
                     }
                 }
             }
@@ -109,8 +124,10 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
     }
 }
 
-void grid_onmouseevent(grid_t* grid, int x, int y)
+void grid_onmouseevent(grid_t* grid, int x, int y, Uint32 event_type)
 {
+    grid->mouseGridX = x / GRID_ELEM_WIDTH;
+    grid->mouseGridY = y / GRID_ELEM_HEIGHT;
     if (grid->player)
     {
         grid->player->underMouseCursor = false;
@@ -119,6 +136,27 @@ void grid_onmouseevent(grid_t* grid, int x, int y)
             if (y > grid->player->posY * GRID_ELEM_HEIGHT && y < grid->player->posY * GRID_ELEM_HEIGHT + GRID_ELEM_HEIGHT)
             {
                 grid->player->underMouseCursor = true;
+            }
+        }
+
+        if (event_type == SDL_MOUSEBUTTONDOWN)
+        {
+            if (grid->player->underMouseCursor)
+            {
+                grid->player->selected = true;
+            }
+            else if (grid->player->selected)
+            {
+                if (grid_pos_within_player_range(grid, grid->mouseGridX, grid->mouseGridY))
+                {
+                    grid->player->posX = grid->mouseGridX;
+                    grid->player->posY = grid->mouseGridY;
+                    grid->player->selected = false;
+                }
+                else
+                {
+                    grid->player->selected = false;
+                }
             }
         }
     }

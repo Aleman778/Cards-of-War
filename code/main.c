@@ -96,13 +96,13 @@ int main(int argc, char* argv[]) {
                     if (event.type == SDL_QUIT) {
                         is_running = false;
                     }
-                    else if (event.type == SDL_MOUSEMOTION)
+                    else if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN)
                     {
                         int x, y;
                         SDL_GetMouseState(&x, &y);
                         if (x < GRID_ELEM_WIDTH * GRID_SIZE_X && y < GRID_ELEM_HEIGHT * GRID_SIZE_Y)
                         {
-                            grid_onmouseevent(&grid, x, y);
+                            grid_onmouseevent(&grid, x, y, event.type);
                         }
                     }
                 }
