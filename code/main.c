@@ -26,6 +26,10 @@ static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 static bool is_running = false;
 
 int main(int argc, char* argv[]) {
+    (void) argc; // Unused variable, this statement can be removed when the variable has been used elsewhere
+    (void) argv; // Unused variable, this statement can be removed when the variable has been used elsewhere
+    (void) symbol_textures; // Unused variable, this statement can be removed when the variable has been used elsewhere
+
     srand((int) time(0));
     
     SDL_SetMainReady();

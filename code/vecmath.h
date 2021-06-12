@@ -4,11 +4,16 @@
  * 2D vector functions
  ***************************************************************************/
 
-static const v2 vec2_zero = { 0.0f, 0.0f };
-static const v2 vec2_left = { -1.0f, 0.0f };
-static const v2 vec2_right = { 1.0f, 0.0f };
-static const v2 vec2_up = { 0.0f, -1.0f };
-static const v2 vec2_down = { 0.0f, 1.0f };
+static const v2 vec2_zero = {{ 0.0f, 0.0f }};
+static const v2 vec2_left = {{ -1.0f, 0.0f }};
+static const v2 vec2_right = {{ 1.0f, 0.0f }};
+static const v2 vec2_up = {{ 0.0f, -1.0f }};
+static const v2 vec2_down = {{ 0.0f, 1.0f }};
+
+bool float_equal(f32 x, f32 y)
+{
+    return fabsf(x - y) < 0.0000001f;
+}
 
 v2 vec2(f32 x, f32 y) {
     v2 result;
@@ -93,7 +98,7 @@ v2 vec2_divs(v2 a, f32 b) {
 }
 
 bool vec2_equals(v2 a, v2 b) {
-    return (a.x == b.x) && (a.y == b.y);
+    return (float_equal(a.x, b.x) && float_equal(a.y, b.y));
 }
 
 f32 vec2_dot_product(v2 a, v2 b) {

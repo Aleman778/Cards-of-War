@@ -105,7 +105,7 @@ draw_card(SDL_Renderer* renderer, Card* card, v2 pos) {
     base.w -= 16;
     base.h -= 16;
     
-    if (card->type >= 0 && card->type < array_count(title_text_textures)) {
+    if (card->type >= 0 && card->type < (int) array_count(title_text_textures)) {
         SDL_Rect rect;
         rect.x = base.x;
         rect.y = base.y;
@@ -138,6 +138,7 @@ update_player_hand(Player_Hand* player) {
 void
 draw_player_cards(SDL_Renderer* renderer, Player_Hand* player) {
     int x_offset = (WINDOW_WIDTH - CARD_WIDTH * player->num_cards) / 2;
+    (void) x_offset; // Unused variable, this statement can be removed when the variable has been used elsewhere
     for (int card_index = 0; card_index < player->num_cards; card_index++) {
         Card* card = &player->cards[card_index];
         draw_card(renderer, card, player->card_pos[card_index]);
