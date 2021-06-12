@@ -20,8 +20,8 @@ static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 #include "entity.h"
 #include "input.h"
 
-#include "cards.c"
 #include "grid.c"
+#include "cards.c"
 #include "map.c"
 
 static bool is_running = false;
@@ -121,20 +121,16 @@ int main(int argc, char* argv[]) {
                         } break;
                         
                         case SDL_KEYDOWN: {
-                            grid.move_type = (grid.move_type + 1) % MOVE_TYPE_MAX;
                             // TODO(alexander): do we need this?
                         } break;
                     } 
                 }
                 
                 // Update player hand
-                update_player_hand(&player_hand);
+                update_player_hand(&player_hand, &input, &grid, player_1);
                 
                 // Move player
-                if (input.mouse.x < GRID_ELEM_WIDTH * GRID_SIZE_X && input.mouse.y < GRID_ELEM_HEIGHT * GRID_SIZE_Y)
-                {
-                    grid_move_player(&grid, &input);
-                }
+                grid_move_player(&grid, &input, &player_hand, player_1);
                 
                 // Rendering
                 SDL_RenderClear(renderer);

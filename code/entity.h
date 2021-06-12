@@ -19,7 +19,7 @@ entity_t* entity_init(entity_t* entity)
     entity->underMouseCursor = false;
     entity->selected = false;
     entity->valid = true;
-
+    
     return entity;
 }
 

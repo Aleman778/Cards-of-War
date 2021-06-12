@@ -43,13 +43,15 @@ init_random_card(Card* card) {
     card->type = (s32) (random_f32() * CardType_Count);
     card->range = 0;
     if (card->type == CardType_Movement_Free) {
-        card->range = (s32) (random_f32() * card_max_attack[card->type]);
+        card->range = (s32) (random_f32() * card_max_free_movement);
+        card->range += 2;
     } else {
         card->range = 0;
     }
     
     if (card->type >= CardType_Attack_First) {
         card->attack = (s32) (random_f32() * card_max_attack[card->type]);
+        card->attack++;
     } else {
         card->attack = 0;
     }
@@ -75,8 +77,6 @@ draw_number(SDL_Renderer* renderer, int number, int x, int y) {
         }
     }
 }
-
-
 
 void
 draw_card(SDL_Renderer* renderer, Card* card, v2 pos) { 
@@ -128,17 +128,54 @@ draw_card(SDL_Renderer* renderer, Card* card, v2 pos) {
 }
 
 void
-update_player_hand(Player_Hand* player) {
+update_player_hand(Player_Hand* player, Input* input, grid_t* grid, entity_t* entity) {
     int x_offset = (WINDOW_WIDTH - CARD_WIDTH * player->num_cards) / 2;
     for (int card_index = 0; card_index < player->num_cards; card_index++) {
-        player->card_pos[card_index] = vec2((f32) (x_offset + CARD_WIDTH*card_index), 400.0f);
+        Card* card = &player->cards[card_index];
+        v2 p = vec2((f32) (x_offset + CARD_WIDTH*card_index), 400.0f);
+        bool hover_card = input->mouse.x > p.x &&
+            input->mouse.y > p.y &&
+            input->mouse.x < p.x + CARD_WIDTH &&
+            input->mouse.y < p.y + CARD_HEIGHT; 
+        if (!player->is_selected && hover_card && 
+            button_is_down(&input->mouse_buttons[SDL_BUTTON_LEFT])) {
+            
+            player->selected_card = card_index;
+            player->is_selected = true;
+            
+            entity->selected = true;
+            memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
+            grid_compute_reachable_positions(grid, entity->posX, entity->posY, 
+                                             PLAYER_MOVE_DISTANCE);
+            switch (card->type) { 
+                case CardType_Movement_Free: {
+                    grid->move_type = MOVE_TYPE_BREADTH_FIRST;
+                } break;
+                case CardType_Movement_Horizontal: {
+                    grid->move_type = MOVE_TYPE_HORIZONTAL;
+                } break;
+                case CardType_Movement_Vertical: {
+                    grid->move_type = MOVE_TYPE_VERTICAL;
+                } break;
+            }
+        }
+        
+        if (hover_card) {
+            p.y = WINDOW_HEIGHT - CARD_HEIGHT;
+            if (p.x < 0.0f) p.x = 0.0f;
+            if (p.x > WINDOW_WIDTH - CARD_WIDTH) p.x = WINDOW_WIDTH - CARD_WIDTH;
+        }
+        
+        if (player->is_selected && player->selected_card == card_index) {
+            p = input->mouse;
+        }
+        
+        player->card_pos[card_index] = p;
     }
 }
 
 void
 draw_player_cards(SDL_Renderer* renderer, Player_Hand* player) {
-    int x_offset = (WINDOW_WIDTH - CARD_WIDTH * player->num_cards) / 2;
-    (void) x_offset; // Unused variable, this statement can be removed when the variable has been used elsewhere
     for (int card_index = 0; card_index < player->num_cards; card_index++) {
         Card* card = &player->cards[card_index];
         draw_card(renderer, card, player->card_pos[card_index]);

@@ -25,23 +25,23 @@ bool grid_pos_walkable(int grid_val)
 {
     switch (grid_val)
     {
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 10:
-    case 11:
-    case 12:
-    case 13:
-    case 19:
-    case 20:
-    case 21:
-    case 22:
-    case 31:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+        case 19:
+        case 20:
+        case 21:
+        case 22:
+        case 31:
         return true;
         break;
-
-    default:
+        
+        default:
         return false;
         break;
     }
@@ -195,7 +195,28 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
     }
 }
 
-void grid_move_player(grid_t* grid, Input* input)
+void 
+grid_move_player(grid_t* grid, Input* input, Player_Hand* player, entity_t* entity) {
+    grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
+    grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
+    
+    if (player->is_selected) {
+        if (button_was_pressed(&input->mouse_buttons[SDL_BUTTON_LEFT])) {
+            if (grid_pos_within_player_range(grid, entity, grid->mouseGridX, grid->mouseGridY))
+            {
+                grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
+                grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
+                entity->posX = grid->mouseGridX;
+                entity->posY = grid->mouseGridY;
+            }
+            
+            entity->selected = false;
+            player->is_selected = false;
+        }
+    }
+}
+
+void grid_move_player_old(grid_t* grid, Input* input)
 {
     grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
     grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;

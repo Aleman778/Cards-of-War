@@ -79,7 +79,7 @@ read_tmx_map_data(const char* filename, int map_data[GRID_SIZE_X][GRID_SIZE_Y]) 
                     assert(width == 20); // NOTE(alexander): do we want larger maps?
                 } else if (eat_string(&scan, " height=\"")) {
                     int height = eat_integer(&scan);
-                    assert(height == 10); // NOTE(alexander): do we want larger maps?
+                    assert(height == 15); // NOTE(alexander): do we want larger maps?
                 }
             }
         }
