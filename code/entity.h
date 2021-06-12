@@ -31,5 +31,6 @@ entity_t* entity_init(entity_t* entity)
 struct grid;
 
 void enemy_perform_random_move(entity_t* enemy, struct grid* grid);
+void render_entity(SDL_Renderer* renderer, entity_t* entity);
 
 #endif

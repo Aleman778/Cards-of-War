@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "grid.h"
+#include "entity.h"
 
 void grid_init(struct grid* grid)
 {
