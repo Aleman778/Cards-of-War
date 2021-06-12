@@ -9,16 +9,19 @@
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
+#define MAX_ENTITIES 128
+
 static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 
 #include "types.h"
 #include "vecmath.h"
 #include "cards.h"
-#include "player_grid/player.h"
+#include "grid.h"
+#include "entity.h"
 #include "input.h"
 
 #include "cards.c"
-#include "player_grid/grid.c"
+#include "grid.c"
 
 static bool is_running = false;
 
@@ -59,11 +62,6 @@ int main(int argc, char* argv[]) {
             
             grid_random_fill(&grid);
             
-            player_t player;
-            player_init(&player);
-            player.posX = GRID_SIZE_X / 2;
-            player.posY = GRID_SIZE_Y / 2;
-            
             // Player Hand
             Player_Hand player_hand;
             zero_struct(player_hand);
@@ -74,10 +72,21 @@ int main(int argc, char* argv[]) {
             } 
             player_hand.num_cards = 8;
             
-            grid.player = &player;
-            grid.grid[player.posX][player.posY] = GRID_NONE;
-            memset(grid.valid_move_positions, 0, sizeof(grid.valid_move_positions));
-            grid_compute_reachable_positions(&grid, player.posX, player.posY, PLAYER_MOVE_DISTANCE);
+            entity_t entities[MAX_ENTITIES];
+            zero_struct(entities);
+            int num_entities = 0;
+            grid.entities = entities;
+
+
+            entity_t* player_1 = entity_init(&entities[num_entities++]);
+            player_1->posX = GRID_SIZE_X / 2;
+            player_1->posY = GRID_SIZE_Y / 2;
+            grid.grid[player_1->posX][player_1->posY] = GRID_NONE;
+
+            entity_t* player_2 = entity_init(&entities[num_entities++]);
+            player_2->posX = GRID_SIZE_X / 4;
+            player_2->posY = GRID_SIZE_Y / 4;
+            grid.grid[player_2->posX][player_2->posY] = GRID_NONE;
             
             // Setup input
             Input input;

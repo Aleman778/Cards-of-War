@@ -1,42 +1,4 @@
-
-#define GRID_ELEM_WIDTH 32
-#define GRID_ELEM_HEIGHT GRID_ELEM_WIDTH
-
-#define GRID_SIZE_X (WINDOW_WIDTH / GRID_ELEM_WIDTH)
-#define GRID_SIZE_Y ((WINDOW_HEIGHT - (GRID_ELEM_HEIGHT * 5)) / GRID_ELEM_HEIGHT)
-
-#define PLAYER_MOVE_DISTANCE 4
-
-enum grid_objects
-{
-    GRID_NONE,
-    //GRID_PLAYER,
-    GRID_OBSTACLE,
-};
-
-enum move_type
-{
-    MOVE_TYPE_BREADTH_FIRST,
-    MOVE_TYPE_HORIZONTAL,
-    MOVE_TYPE_VERTICAL,
-    MOVE_TYPE_IGNORE_OBSTACLES,
-    MOVE_TYPE_MAX,
-};
-
-typedef struct
-{
-    int x, y;
-} grid_pos_t;
-
-typedef struct
-{
-    int grid[GRID_SIZE_X][GRID_SIZE_Y];
-    int valid_move_positions[GRID_SIZE_X][GRID_SIZE_Y];
-    player_t* player;
-    int mouseGridX, mouseGridY;
-    int move_type;
-} grid_t;
-
+#include <string.h>
 
 void grid_init(grid_t* grid)
 {
@@ -94,7 +56,7 @@ int signum(int x)
     return 0;
 }
 
-bool grid_pos_within_player_range(grid_t* grid, int gridX, int gridY)
+bool grid_pos_within_player_range(grid_t* grid, entity_t* player, int gridX, int gridY)
 {
     if (gridX >= GRID_SIZE_X || gridY >= GRID_SIZE_Y)
         return false;
@@ -102,13 +64,13 @@ bool grid_pos_within_player_range(grid_t* grid, int gridX, int gridY)
     switch (grid->move_type)
     {
         case MOVE_TYPE_IGNORE_OBSTACLES: {
-            return abs(grid->player->posX - gridX) + abs(grid->player->posY - gridY) <= PLAYER_MOVE_DISTANCE && grid->grid[gridX][gridY] == GRID_NONE;
+            return abs(player->posX - gridX) + abs(player->posY - gridY) <= PLAYER_MOVE_DISTANCE && grid->grid[gridX][gridY] == GRID_NONE;
         } break;
         case MOVE_TYPE_HORIZONTAL: {
-            if (grid->player->posY != gridY)
+            if (player->posY != gridY)
                 return false;
             
-            for (int x = grid->player->posX; x != gridX; x += signum(gridX - grid->player->posX))
+            for (int x = player->posX; x != gridX; x += signum(gridX - player->posX))
             {
                 if (grid->grid[x][gridY] != GRID_NONE)
                     return false;
@@ -116,9 +78,9 @@ bool grid_pos_within_player_range(grid_t* grid, int gridX, int gridY)
             return grid->grid[gridX][gridY] == GRID_NONE;
         } break;
         case MOVE_TYPE_VERTICAL: {
-            if (grid->player->posX != gridX)
+            if (player->posX != gridX)
                 return false;
-            for (int y = grid->player->posY; y != gridY; y += signum(gridY - grid->player->posY))
+            for (int y = player->posY; y != gridY; y += signum(gridY - player->posY))
             {
                 if (grid->grid[gridX][y] != GRID_NONE)
                     return false;
@@ -166,39 +128,47 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
                 SDL_RenderFillRect(renderer, &r);
             }
             
-            if (grid->player && (grid->player->underMouseCursor || grid->player->selected))
+            for (int entityIndex = 0; entityIndex < MAX_ENTITIES; entityIndex++)
             {
-                if (grid_pos_within_player_range(grid, x, y))
+                entity_t* entity = &grid->entities[entityIndex];
+
+                if (entity && entity->valid && (entity->underMouseCursor || entity->selected))
                 {
-                    if (grid->player->selected)
-                        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-                    else
-                        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
-                    SDL_RenderDrawRect(renderer, &r);
-                    if (grid->player->selected && x == grid->mouseGridX && y == grid->mouseGridY)
-                        SDL_RenderFillRect(renderer, &r);
+                    if (grid_pos_within_player_range(grid, entity, x, y))
+                    {
+                        if (entity->selected)
+                            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+                        else
+                            SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+                        SDL_RenderDrawRect(renderer, &r);
+                        if (entity->selected && x == grid->mouseGridX && y == grid->mouseGridY)
+                            SDL_RenderFillRect(renderer, &r);
+                    }
                 }
             }
         }
     }
     
-    if (grid->player)
+    for (int entityIndex = 0; entityIndex < MAX_ENTITIES; entityIndex++)
     {
-        player_t* player = grid->player;
+        entity_t* entity = &grid->entities[entityIndex];
         
-        SDL_Rect player_rect;
-        player_rect.x = player->posX * GRID_ELEM_WIDTH;
-        player_rect.y = player->posY * GRID_ELEM_HEIGHT;
-        player_rect.w = GRID_ELEM_WIDTH;
-        player_rect.h = GRID_ELEM_HEIGHT;
-        
-        if (player->selected)
-            SDL_SetRenderDrawColor(renderer, 255, 200, 200, 255);
-        else if (player->underMouseCursor)
-            SDL_SetRenderDrawColor(renderer, 255, 128, 128, 255);
-        else
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderFillRect(renderer, &player_rect);
+        if (entity && entity->valid)
+        {
+            SDL_Rect entity_rect;
+            entity_rect.x = entity->posX * GRID_ELEM_WIDTH;
+            entity_rect.y = entity->posY * GRID_ELEM_HEIGHT;
+            entity_rect.w = GRID_ELEM_WIDTH;
+            entity_rect.h = GRID_ELEM_HEIGHT;
+
+            if (entity->selected)
+                SDL_SetRenderDrawColor(renderer, 255, 200, 200, 255);
+            else if (entity->underMouseCursor)
+                SDL_SetRenderDrawColor(renderer, 255, 128, 128, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            SDL_RenderFillRect(renderer, &entity_rect);
+        }
     }
 }
 
@@ -206,36 +176,43 @@ void grid_move_player(grid_t* grid, Input* input)
 {
     grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
     grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
-    if (grid->player)
+
+    for (int entityIndex = 0; entityIndex < MAX_ENTITIES; entityIndex++)
     {
-        grid->player->underMouseCursor = false;
-        if (input->mouse.x > grid->player->posX * GRID_ELEM_WIDTH && input->mouse.x < grid->player->posX * GRID_ELEM_WIDTH + GRID_ELEM_WIDTH)
-        {
-            if (input->mouse.y > grid->player->posY * GRID_ELEM_HEIGHT && input->mouse.y < grid->player->posY * GRID_ELEM_HEIGHT + GRID_ELEM_HEIGHT)
-            {
-                grid->player->underMouseCursor = true;
-            }
-        }
+        entity_t* entity = &grid->entities[entityIndex];
         
-        if (button_was_pressed(&input->mouse_buttons[SDL_BUTTON_LEFT]))
+        if (entity && entity->valid)
         {
-            if (grid->player->underMouseCursor)
+            entity->underMouseCursor = false;
+            if (input->mouse.x > entity->posX * GRID_ELEM_WIDTH && input->mouse.x < entity->posX * GRID_ELEM_WIDTH + GRID_ELEM_WIDTH)
             {
-                grid->player->selected = true;
-            }
-            else if (grid->player->selected)
-            {
-                if (grid_pos_within_player_range(grid, grid->mouseGridX, grid->mouseGridY))
+                if (input->mouse.y > entity->posY * GRID_ELEM_HEIGHT && input->mouse.y < entity->posY * GRID_ELEM_HEIGHT + GRID_ELEM_HEIGHT)
                 {
-                    grid->player->posX = grid->mouseGridX;
-                    grid->player->posY = grid->mouseGridY;
+                    entity->underMouseCursor = true;
                     memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
-                    grid_compute_reachable_positions(grid, grid->player->posX, grid->player->posY, PLAYER_MOVE_DISTANCE);
-                    grid->player->selected = false;
+                    grid_compute_reachable_positions(grid, entity->posX, entity->posY, PLAYER_MOVE_DISTANCE);
                 }
-                else
+            }
+
+            if (button_was_pressed(&input->mouse_buttons[SDL_BUTTON_LEFT]))
+            {
+                if (entity->underMouseCursor)
                 {
-                    grid->player->selected = false;
+                    entity->selected = true;
+                    memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
+                    grid_compute_reachable_positions(grid, entity->posX, entity->posY, PLAYER_MOVE_DISTANCE);
+                }
+                else if (entity->selected)
+                {
+                    if (grid_pos_within_player_range(grid, entity, grid->mouseGridX, grid->mouseGridY))
+                    {
+                        entity->posX = grid->mouseGridX;
+                        entity->posY = grid->mouseGridY;
+                        memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
+                        grid_compute_reachable_positions(grid, entity->posX, entity->posY, PLAYER_MOVE_DISTANCE);
+                    }
+
+                    entity->selected = false;
                 }
             }
         }
