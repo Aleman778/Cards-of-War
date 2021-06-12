@@ -206,7 +206,7 @@ grid_move_player(struct grid* grid, Input* input, Player_Hand* player, entity_t*
                     entity_t* enemy = &grid->entities[i];
 
                     if (enemy && enemy->valid && !enemy->playerControlled)
-                        enemy_perform_random_move(enemy, grid);
+                        enemy_random_chase_move(enemy, &grid->entities[0], grid);
                 }
             }
             
