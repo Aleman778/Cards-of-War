@@ -43,14 +43,17 @@ init_random_card(Card* card) {
     card->type = (s32) (random_f32() * CardType_Count);
     card->range = 0;
     if (card->type == CardType_Movement_Free) {
-        card->range = (s32) (random_f32() * card_max_free_movement);
+        card->range = (s32) (random_f32() * (card_max_free_movement - 2));
+        card->range += 2;
+    } else if (card->type == CardType_Attack_Blast) {
+        card->range = (s32) (random_f32() * card_max_blast_radius);
         card->range += 2;
     } else {
         card->range = 0;
     }
     
     if (card->type >= CardType_Attack_First) {
-        card->attack = (s32) (random_f32() * card_max_attack[card->type]);
+        card->attack = (s32) (random_f32() * (card_max_attack[card->type] - 1));
         card->attack++;
     } else {
         card->attack = 0;
@@ -61,18 +64,21 @@ void
 draw_number(SDL_Renderer* renderer, int number, int x, int y) {
     assert(number >= 0);
     
+    int num_digits = (s32) log10(number);
+    
     SDL_Rect rect;
-    rect.x = x;
+    rect.x = x + FONT_SIZE * num_digits;
     rect.y = y;
-    rect.w = 24;
-    rect.h = 24;
+    rect.w = FONT_SIZE;
+    rect.h = FONT_SIZE;
     
     for (;;) {
         int digit = number % 10;
-        number /= 10;// TODO(alexander): this will be revese order :P, maybe doesn't need > 9
+        number /= 10;
         SDL_RenderCopy(renderer, number_textures[digit], 0, &rect);
+        rect.x -= FONT_SIZE;
         
-        if (number <= 9) {
+        if (number == 0) {
             break;
         }
     }
@@ -106,15 +112,18 @@ draw_card(SDL_Renderer* renderer, Card* card, v2 pos) {
     base.h -= 16;
     
     if (card->type >= 0 && card->type < (int) array_count(title_text_textures)) {
+        s32 text_width = card_type_string_len[card->type] * FONT_SIZE;
+        if (text_width > base.w) text_width = base.w;
         SDL_Rect rect;
         rect.x = base.x;
         rect.y = base.y;
-        rect.w = base.w;
-        rect.h = 24;
+        rect.w = text_width;
+        
+        rect.h = FONT_SIZE;
         SDL_RenderCopy(renderer, title_text_textures[card->type], 0, &rect);
     }
     
-    if (card->type < CardType_Movement_First) {
+    if (card->range > 0) {
         base.y += 40;
         base.h -= 40;
         draw_number(renderer, card->range, base.x, base.y);
@@ -129,38 +138,44 @@ draw_card(SDL_Renderer* renderer, Card* card, v2 pos) {
 
 void
 update_player_hand(Player_Hand* player, Input* input, struct grid* grid, entity_t* entity) {
-    int x_offset = (WINDOW_WIDTH - CARD_WIDTH * player->num_cards) / 2;
-    for (int card_index = 0; card_index < player->num_cards; card_index++) {
+    int num_cards = player->num_cards;
+    if (player->is_selected) {
+        num_cards--;
+    }
+    int x_offset = (WINDOW_WIDTH - CARD_WIDTH * num_cards) / 2;
+    int card_spacing = CARD_WIDTH;
+    if (x_offset < 0) {
+        card_spacing = WINDOW_WIDTH / num_cards;
+        x_offset = 0;
+    }
+    
+    int card_space_index = 0;
+    for (int card_index = 0; card_index < num_cards; card_index++) {
         Card* card = &player->cards[card_index];
-        v2 p = vec2((f32) (x_offset + CARD_WIDTH*card_index), 400.0f);
+        v2 p = vec2((f32) (x_offset + card_spacing*card_space_index), 400.0f);
         bool hover_card = input->mouse.x > p.x &&
             input->mouse.y > p.y &&
-            input->mouse.x < p.x + CARD_WIDTH &&
-            input->mouse.y < p.y + CARD_HEIGHT; 
+            input->mouse.x < p.x + card_spacing &&
+            input->mouse.y < p.y + card_spacing; 
         if (!player->is_selected && hover_card && 
             button_is_down(&input->mouse_buttons[SDL_BUTTON_LEFT])) {
             
             player->selected_card = card_index;
             player->is_selected = true;
             
+            int move_distance = card->range;
+            if (move_distance == 0) {
+                move_distance = 100;
+            }
+            
             entity->selected = true;
             memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
             grid_compute_reachable_positions(grid, entity->posX, entity->posY, 
-                                             PLAYER_MOVE_DISTANCE);
-            switch (card->type) { 
-                case CardType_Movement_Free: {
-                    grid->move_type = MOVE_TYPE_BREADTH_FIRST;
-                } break;
-                case CardType_Movement_Horizontal: {
-                    grid->move_type = MOVE_TYPE_HORIZONTAL;
-                } break;
-                case CardType_Movement_Vertical: {
-                    grid->move_type = MOVE_TYPE_VERTICAL;
-                } break;
-            }
+                                             card->range);
+            grid->card = card;
         }
         
-        if (hover_card) {
+        if (hover_card && !player->is_selected) {
             p.y = WINDOW_HEIGHT - CARD_HEIGHT;
             if (p.x < 0.0f) p.x = 0.0f;
             if (p.x > WINDOW_WIDTH - CARD_WIDTH) p.x = WINDOW_WIDTH - CARD_WIDTH;
@@ -171,6 +186,9 @@ update_player_hand(Player_Hand* player, Input* input, struct grid* grid, entity_
         }
         
         player->card_pos[card_index] = p;
+        if (!player->is_selected || player->selected_card != card_index) {
+            card_space_index++;
+        }
     }
 }
 

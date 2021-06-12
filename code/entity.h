@@ -23,7 +23,7 @@ entity_t* entity_init(entity_t* entity)
     entity->selected = false;
     entity->valid = true;
     entity->playerControlled = false;
-    entity->health = 100;
+    entity->health = 30;
     entity->maxHealth = entity->health;
     return entity;
 }

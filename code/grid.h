@@ -33,7 +33,7 @@ struct grid
     int valid_move_positions[GRID_SIZE_X][GRID_SIZE_Y];
     entity_t* entities;
     int mouseGridX, mouseGridY;
-    int move_type;
+    Card* card;
     
     SDL_Texture* tileset;
     int tileset_width;
@@ -42,7 +42,7 @@ struct grid
 
 v2 index_to_pos(int index, int xdim)
 {
-    return vec2(index % xdim, index / xdim);
+    return vec2((f32) (index % xdim), (f32) (index / xdim));
 }
 
 #endif

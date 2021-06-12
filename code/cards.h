@@ -16,11 +16,16 @@ enum CardType {
     CardType_Count = 6,
 };
 
+static const s32 card_type_string_len[6] = {
+    4, 9, 8, 5, 6, 5
+};
+
 static const s32 card_max_attack[6] = {
     0, 0, 0, 3, 5, 7
 };
 
 static const s32 card_max_free_movement = 7;
+static const s32 card_max_blast_radius = 4;
 
 typedef s32 Card_Type;
 

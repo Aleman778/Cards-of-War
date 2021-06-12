@@ -8,6 +8,7 @@
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
+#define FONT_SIZE 16
 
 #define MAX_ENTITIES 128
 
@@ -52,7 +53,7 @@ int main(int argc, char* argv[]) {
                                                         SDL_RENDERER_PRESENTVSYNC |
                                                         SDL_RENDERER_ACCELERATED);
             // Load font
-            main_font = TTF_OpenFont("assets/fonts/dpcomic.ttf", 16);
+            main_font = TTF_OpenFont("assets/fonts/dpcomic.ttf", FONT_SIZE);
             init_cards(renderer);
             
             struct grid grid;
@@ -132,7 +133,7 @@ int main(int argc, char* argv[]) {
                 update_player_hand(&player_hand, &input, &grid, player_1);
                 
                 // Move player
-                grid_move_player(&grid, &input, &player_hand, player_1);
+                grid_perform_action(&grid, &input, &player_hand, player_1);
                 
                 // Rendering
                 SDL_RenderClear(renderer);

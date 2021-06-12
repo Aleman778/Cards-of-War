@@ -84,35 +84,58 @@ bool grid_pos_within_player_range(struct grid* grid, entity_t* player, int gridX
     if (gridX >= GRID_SIZE_X || gridY >= GRID_SIZE_Y)
         return false;
     
-    switch (grid->move_type)
-    {
-        case MOVE_TYPE_IGNORE_OBSTACLES: {
-            return abs(player->posX - gridX) + abs(player->posY - gridY) <= PLAYER_MOVE_DISTANCE && grid_pos_walkable(grid->grid[gridX][gridY]);
-        } break;
-        case MOVE_TYPE_HORIZONTAL: {
-            if (player->posY != gridY)
-                return false;
+    if (grid->card) {
+        switch (grid->card->type)
+        {
+            case CardType_Movement_Free: {
+                return grid->valid_move_positions[gridX][gridY] > 0;
+            } break;
+            case CardType_Movement_Horizontal: {
+                if (player->posY != gridY)
+                    return false;
+                
+                for (int x = player->posX; x != gridX; x += signum(gridX - player->posX))
+                {
+                    if (!grid_pos_walkable(grid->grid[x][gridY]))
+                        return false;
+                }
+                return grid_pos_walkable(grid->grid[gridX][gridY]);
+            } break;
+            case CardType_Movement_Vertical: {
+                if (player->posX != gridX)
+                    return false;
+                for (int y = player->posY; y != gridY; y += signum(gridY - player->posY))
+                {
+                    if (!grid_pos_walkable(grid->grid[gridX][y]))
+                        return false;
+                }
+                return grid_pos_walkable(grid->grid[gridX][gridY]);
+            } break;
             
-            for (int x = player->posX; x != gridX; x += signum(gridX - player->posX))
-            {
-                if (!grid_pos_walkable(grid->grid[x][gridY]))
+            case CardType_Attack_Laser: {
+                if (player->posX != gridX && player->posY != gridY)
                     return false;
-            }
-            return grid_pos_walkable(grid->grid[gridX][gridY]);
-        } break;
-        case MOVE_TYPE_VERTICAL: {
-            if (player->posX != gridX)
-                return false;
-            for (int y = player->posY; y != gridY; y += signum(gridY - player->posY))
-            {
-                if (!grid_pos_walkable(grid->grid[gridX][y]))
-                    return false;
-            }
-            return grid_pos_walkable(grid->grid[gridX][gridY]);
-        } break;
-        case MOVE_TYPE_BREADTH_FIRST: {
-            return grid->valid_move_positions[gridX][gridY] > 0;
-        } break;
+                for (int x = player->posX; x != gridX; x += signum(gridX - player->posX))
+                {
+                    if (!grid_pos_walkable(grid->grid[x][gridY]))
+                        return false;
+                }
+                for (int y = player->posY; y != gridY; y += signum(gridY - player->posY))
+                {
+                    if (!grid_pos_walkable(grid->grid[gridX][y]))
+                        return false;
+                }
+                return grid_pos_walkable(grid->grid[gridX][gridY]);
+            } break;
+            
+            case CardType_Attack_Cannon: {
+                return abs(player->posX - gridX) + abs(player->posY - gridY) <= PLAYER_MOVE_DISTANCE && grid_pos_walkable(grid->grid[gridX][gridY]);
+                //return grid->valid_move_positions[gridX][gridY] > 0;
+            } break;
+            case CardType_Attack_Blast: {
+                return grid->valid_move_positions[gridX][gridY] > 0;
+            } break;
+        }
     }
     
     return false;
@@ -188,99 +211,91 @@ void grid_render(SDL_Renderer* renderer, struct grid* grid)
 }
 
 void 
-grid_move_player(struct grid* grid, Input* input, Player_Hand* player, entity_t* entity) {
+grid_perform_action(struct grid* grid, Input* input, Player_Hand* player, entity_t* entity) {
     grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
     grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
     
-    if (player->is_selected) {
+    if (player->is_selected && grid->card) {
         if (button_was_pressed(&input->mouse_buttons[SDL_BUTTON_LEFT])) {
-            if (grid_pos_within_player_range(grid, entity, grid->mouseGridX, grid->mouseGridY))
-            {
-                grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
-                grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
-                entity->posX = grid->mouseGridX;
-                entity->posY = grid->mouseGridY;
-
-                for (int i = 0; i < MAX_ENTITIES; i++)
-                {
-                    entity_t* enemy = &grid->entities[i];
-
-                    if (enemy && enemy->valid && !enemy->playerControlled)
-                        enemy_random_chase_move(enemy, &grid->entities[0], grid);
-                }
-            }
-            
-            entity->selected = false;
-            player->is_selected = false;
-        }
-    }
-}
-
-void grid_move_player_old(struct grid* grid, Input* input)
-{
-    grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
-    grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
-    
-    for (int entityIndex = 0; entityIndex < MAX_ENTITIES; entityIndex++)
-    {
-        entity_t* entity = &grid->entities[entityIndex];
-        
-        if (entity && entity->valid && entity->playerControlled)
-        {
-            entity->underMouseCursor = false;
-            if (input->mouse.x > entity->posX * GRID_ELEM_WIDTH && input->mouse.x < entity->posX * GRID_ELEM_WIDTH + GRID_ELEM_WIDTH)
-            {
-                if (input->mouse.y > entity->posY * GRID_ELEM_HEIGHT && input->mouse.y < entity->posY * GRID_ELEM_HEIGHT + GRID_ELEM_HEIGHT)
-                {
-                    entity->underMouseCursor = true;
+            if (input->mouse.y < WINDOW_HEIGHT - 40) {
+                bool is_within_grid = grid_pos_within_player_range(grid, entity, grid->mouseGridX, grid->mouseGridY);
+                
+                bool is_valid_move = false;
+                switch (grid->card->type) {
+                    case CardType_Movement_Free:
+                    case CardType_Movement_Horizontal:
+                    case CardType_Movement_Vertical: {
+                        is_valid_move = is_within_grid;
+                        if (is_valid_move) {
+                            entity->posX = grid->mouseGridX;
+                            entity->posY = grid->mouseGridY;
+                        }
+                    } break;
                     
-                    bool anotherEntitySelected = false;
-                    for (int entityIndex2 = 0; entityIndex2 < MAX_ENTITIES; entityIndex2++)
-                    {
-                        entity_t* entity2 = &grid->entities[entityIndex2];
-                        
-                        if (entity2 && entity2->valid && entity2->selected)
-                            anotherEntitySelected = true;
-                    }
-                    
-                    if (!anotherEntitySelected)
-                    {
-                        memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
-                        grid_compute_reachable_positions(grid, entity->posX, entity->posY, PLAYER_MOVE_DISTANCE);
-                    }
-                }
-            }
-            
-            if (button_was_pressed(&input->mouse_buttons[SDL_BUTTON_LEFT]))
-            {
-                if (entity->underMouseCursor)
-                {
-                    entity->selected = true;
-                    memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
-                    grid_compute_reachable_positions(grid, entity->posX, entity->posY, PLAYER_MOVE_DISTANCE);
-                }
-                else if (entity->selected)
-                {
-                    if (grid_pos_within_player_range(grid, entity, grid->mouseGridX, grid->mouseGridY))
-                    {
-                        entity->posX = grid->mouseGridX;
-                        entity->posY = grid->mouseGridY;
-
+                    case CardType_Attack_Laser: {
+                        is_valid_move = true;
                         for (int i = 0; i < MAX_ENTITIES; i++)
                         {
                             entity_t* enemy = &grid->entities[i];
-
-                            if (enemy && enemy->valid && !enemy->playerControlled)
-                                enemy_perform_random_move(enemy, grid);
+                            if (!enemy->playerControlled &&
+                                grid_pos_within_player_range(grid, entity, enemy->posX, enemy->posY)) {
+                                enemy->health -= (f32) grid->card->attack;
+                                // TODO(alexander): defeat enemy, health <= 0
+                            }
                         }
-
-                        memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
-                        grid_compute_reachable_positions(grid, entity->posX, entity->posY, PLAYER_MOVE_DISTANCE);
-                    }
+                    } break;
                     
-                    entity->selected = false;
+                    case CardType_Attack_Cannon: {
+                        is_valid_move = true;
+                        for (int i = 0; i < MAX_ENTITIES; i++)
+                        {
+                            entity_t* enemy = &grid->entities[i];
+                            if (enemy->posX == grid->mouseGridX &&
+                                enemy->posY == grid->mouseGridY) {
+                                enemy->health -= (f32) grid->card->attack;
+                                // TODO(alexander): defeat enemy, health <= 0
+                            }
+                        }
+                    } break;
+                    
+                    case CardType_Attack_Blast: {
+                        is_valid_move = is_within_grid;
+                        for (int i = 0; i < MAX_ENTITIES; i++)
+                        {
+                            entity_t* enemy = &grid->entities[i];
+                            if (!enemy->playerControlled &&
+                                grid_pos_within_player_range(grid, entity, enemy->posX, enemy->posY)) {
+                                enemy->health -= (f32) grid->card->attack;
+                                // TODO(alexander): defeat enemy, health <= 0
+                            }
+                        }
+                    } break;
+                }
+                
+                if (is_valid_move) {
+                    // Discard the used card
+                    int cards_right = player->num_cards - player->selected_card;
+                    if (cards_right > 0) {
+                        memmove(player->cards + player->selected_card, 
+                                player->cards + (player->selected_card + 1),
+                                cards_right * sizeof(Card));
+                    } 
+                    
+                    player->num_cards--;
+                    
+                    // Enemy turn
+                    for (int i = 0; i < MAX_ENTITIES; i++)
+                    {
+                        entity_t* enemy = &grid->entities[i];
+                        
+                        if (enemy && enemy->valid && !enemy->playerControlled)
+                            enemy_random_chase_move(enemy, &grid->entities[0], grid);
+                    }
                 }
             }
+            entity->selected = false;
+            player->is_selected = false;
+            grid->card = 0;
         }
     }
 }
