@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #define array_count(array) (sizeof(array) / sizeof((array)[0]))
+#define zero_struct(s) (memset(&s, 0, sizeof(s)))
 
 #if BUILD_DEBUG
 void
