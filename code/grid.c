@@ -180,21 +180,7 @@ void grid_render(SDL_Renderer* renderer, struct grid* grid)
         
         if (entity && entity->valid)
         {
-            SDL_Rect entity_rect;
-            entity_rect.x = entity->posX * GRID_ELEM_WIDTH;
-            entity_rect.y = entity->posY * GRID_ELEM_HEIGHT;
-            entity_rect.w = GRID_ELEM_WIDTH;
-            entity_rect.h = GRID_ELEM_HEIGHT;
-            
-            if (entity->selected)
-                SDL_SetRenderDrawColor(renderer, 200, 200, 255, 255);
-            else if (entity->underMouseCursor)
-                SDL_SetRenderDrawColor(renderer, 128, 128, 255, 255);
-            else if (entity->playerControlled)
-                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-            else
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            SDL_RenderFillRect(renderer, &entity_rect);
+            render_entity(renderer, entity);
         }
     }
 }

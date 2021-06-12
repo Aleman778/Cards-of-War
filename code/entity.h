@@ -11,6 +11,8 @@ typedef struct
     bool selected;
     bool valid;
     bool playerControlled;
+    f32 health;
+    f32 maxHealth;
 } entity_t;
 
 entity_t* entity_init(entity_t* entity)
@@ -21,6 +23,8 @@ entity_t* entity_init(entity_t* entity)
     entity->selected = false;
     entity->valid = true;
     entity->playerControlled = false;
+    entity->health = 100;
+    entity->maxHealth = entity->health;
     return entity;
 }
 
