@@ -76,10 +76,11 @@ int main(int argc, char* argv[]) {
             entity_t* player_1 = entity_init(&entities[num_entities++]);
             player_1->posX = 1;
             player_1->posY = 1;
+            player_1->playerControlled = true;
             
-            entity_t* player_2 = entity_init(&entities[num_entities++]);
-            player_2->posX = 12;
-            player_2->posY = 1;
+            entity_t* enemy_1 = entity_init(&entities[num_entities++]);
+            enemy_1->posX = 12;
+            enemy_1->posY = 1;
             
             // Load tilemap
             read_tmx_map_data("assets/GMTK-1.tmx", grid.grid);

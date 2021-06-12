@@ -188,9 +188,11 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
             entity_rect.h = GRID_ELEM_HEIGHT;
             
             if (entity->selected)
-                SDL_SetRenderDrawColor(renderer, 255, 200, 200, 255);
+                SDL_SetRenderDrawColor(renderer, 200, 200, 255, 255);
             else if (entity->underMouseCursor)
-                SDL_SetRenderDrawColor(renderer, 255, 128, 128, 255);
+                SDL_SetRenderDrawColor(renderer, 128, 128, 255, 255);
+            else if (entity->playerControlled)
+                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
             else
                 SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             SDL_RenderFillRect(renderer, &entity_rect);
@@ -207,7 +209,7 @@ void grid_move_player(grid_t* grid, Input* input)
     {
         entity_t* entity = &grid->entities[entityIndex];
         
-        if (entity && entity->valid)
+        if (entity && entity->valid && entity->playerControlled)
         {
             entity->underMouseCursor = false;
             if (input->mouse.x > entity->posX * GRID_ELEM_WIDTH && input->mouse.x < entity->posX * GRID_ELEM_WIDTH + GRID_ELEM_WIDTH)
