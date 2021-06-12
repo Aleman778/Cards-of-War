@@ -26,6 +26,7 @@ bool grid_pos_walkable(int grid_val)
 {
     switch (grid_val)
     {
+        case 1:
         case 2:
         case 3:
         case 4:
