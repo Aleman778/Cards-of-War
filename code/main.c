@@ -71,6 +71,7 @@ int main(int argc, char* argv[]) {
             player.posY = GRID_SIZE_Y / 2;
 
             grid.player = &player;
+            grid.grid[player.posX][player.posY] = GRID_NONE;
             memset(grid.valid_move_positions, 0, sizeof(grid.valid_move_positions));
             grid_compute_reachable_positions(&grid, player.posX, player.posY, PLAYER_MOVE_DISTANCE);
             
