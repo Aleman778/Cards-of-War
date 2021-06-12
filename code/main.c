@@ -7,12 +7,14 @@
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
+static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
+
 #include "types.h"
 #include "vecmath.h"
 #include "player_grid/player.h"
 #include "player_grid/grid.h"
+#include "cards.c"
 
-static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 static bool is_running = false;
 
 int main(int argc, char* argv[]) {
@@ -44,33 +46,8 @@ int main(int argc, char* argv[]) {
             dest.h = WINDOW_HEIGHT;
             
             // Load font
-            SDL_Color White = {255, 255, 255};
-            
             main_font = TTF_OpenFont("assets/fonts/dpcomic.ttf", 16);
-            printf("%p\n", main_font);
-            SDL_Surface* surfaceMessage = TTF_RenderText_Solid(main_font, "put your text here", White); 
-            
-            // now you can convert it into a texture
-            SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-            
-            SDL_Rect Message_rect; //create a rect
-            Message_rect.x = 0;  //controls the rect's x coordinate 
-            Message_rect.y = 0; // controls the rect's y coordinte
-            Message_rect.w = 300; // controls the width of the rect
-            Message_rect.h = 30; // controls the height of the rect
-            
-            // (0,0) is on the top left of the window/screen,
-            // think a rect as the text's box,
-            // that way it would be very simple to understand
-            
-            // Now since it's a texture, you have to put RenderCopy
-            // in your game loop area, the area where the whole code executes
-            
-            // you put the renderer's name first, the Message,
-            // the crop size (you can ignore this if you don't want
-            // to dabble with cropping), and the rect which is the size
-            // and coordinate of your texture
-            //SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+            init_cards(renderer);
             
             // Simple vector math test
             v2 test_vec = vec2(10.0f, 15.0f);
@@ -80,6 +57,11 @@ int main(int argc, char* argv[]) {
             
             grid_t grid;
             grid_init(&grid);
+            
+            Card card;
+            card.type = CardType_Movement_Horizontal;
+            card.range = 0;
+            card.attack = 0;
             
             player_t player;
             player_init(&player);
@@ -116,8 +98,8 @@ int main(int argc, char* argv[]) {
                 
                 grid_render(renderer, &grid);
                 
-                //SDL_RenderCopy(renderer, texture, 0, &dest);
-                SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+                // Render players hand of cards
+                draw_card(renderer, &card, 300, 300);
                 
                 // Render to the screen
                 SDL_RenderPresent(renderer);
