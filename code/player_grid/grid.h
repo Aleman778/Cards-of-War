@@ -22,19 +22,27 @@ enum grid_objects
 {
     GRID_NONE,
     //GRID_PLAYER,
+    GRID_OBSTACLE,
 };
 
 enum move_type
 {
-    MOVE_TYPE_MAX_DIST,
+    MOVE_TYPE_BREADTH_FIRST,
     MOVE_TYPE_HORIZONTAL,
     MOVE_TYPE_VERTICAL,
+    MOVE_TYPE_IGNORE_OBSTACLES,
     MOVE_TYPE_MAX,
 };
 
 typedef struct
 {
+    int x, y;
+} grid_pos_t;
+
+typedef struct
+{
     int grid[GRID_SIZE_X][GRID_SIZE_Y];
+    int valid_move_positions[GRID_SIZE_X][GRID_SIZE_Y];
     player_t* player;
     int mouseGridX, mouseGridY;
     int move_type;
@@ -47,6 +55,56 @@ void grid_init(grid_t* grid)
     //grid->grid[GRID_SIZE_X / 2][GRID_SIZE_Y / 2] = GRID_PLAYER;
 }
 
+int grid_limit_x(int x)
+{
+    return fmax(0, fmin(GRID_SIZE_X - 1, x));
+}
+
+int grid_limit_y(int y)
+{
+    return fmax(0, fmin(GRID_SIZE_Y - 1, y));
+}
+
+void grid_random_fill(grid_t* grid)
+{
+    for (int x = 0; x < GRID_SIZE_X; x++)
+    {
+        for (int y = 0; y < GRID_SIZE_Y; y++)
+        {
+            if (rand() % 100 < 20)
+                grid->grid[x][y] = GRID_OBSTACLE;
+        }
+    }
+}
+
+void grid_compute_reachable_positions(grid_t* grid, int x, int y, int max_distance)
+{
+    if (max_distance < 0)
+        return;
+
+    if (grid->grid[x][y] != GRID_NONE)
+    {
+        grid->valid_move_positions[x][y] = 0;
+        return;
+    }
+
+    grid->valid_move_positions[x][y] = 1;
+
+    grid_compute_reachable_positions(grid, grid_limit_x(x + 1), grid_limit_y(y), max_distance - 1);
+    grid_compute_reachable_positions(grid, grid_limit_x(x), grid_limit_y(y + 1), max_distance - 1);
+    grid_compute_reachable_positions(grid, grid_limit_x(x - 1), grid_limit_y(y), max_distance - 1);
+    grid_compute_reachable_positions(grid, grid_limit_x(x), grid_limit_y(y - 1), max_distance - 1);
+}
+
+int signum(int x)
+{
+    if (x < 0)
+        return -1;
+    if (x > 0)
+        return 1;
+    return 0;
+}
+
 bool grid_pos_within_player_range(grid_t* grid, int gridX, int gridY)
 {
     if (gridX >= GRID_SIZE_X || gridY >= GRID_SIZE_Y)
@@ -54,14 +112,32 @@ bool grid_pos_within_player_range(grid_t* grid, int gridX, int gridY)
 
     switch (grid->move_type)
     {
-        case MOVE_TYPE_MAX_DIST:
+        case MOVE_TYPE_IGNORE_OBSTACLES:
             return abs(grid->player->posX - gridX) + abs(grid->player->posY - gridY) <= PLAYER_MOVE_DISTANCE && grid->grid[gridX][gridY] == GRID_NONE;
             break;
         case MOVE_TYPE_HORIZONTAL:
-            return grid->player->posX == gridX;
+            if (grid->player->posY != gridY)
+                return false;
+
+            for (int x = grid->player->posX; x != gridX; x += signum(gridX - grid->player->posX))
+            {
+                if (grid->grid[x][gridY] != GRID_NONE)
+                    return false;
+            }
+            return grid->grid[gridX][gridY] == GRID_NONE;
             break;
         case MOVE_TYPE_VERTICAL:
-            return grid->player->posY == gridY;
+            if (grid->player->posX != gridX)
+                return false;
+            for (int y = grid->player->posY; y != gridY; y += signum(gridY - grid->player->posY))
+            {
+                if (grid->grid[gridX][y] != GRID_NONE)
+                    return false;
+            }
+            return grid->grid[gridX][gridY] == GRID_NONE;
+            break;
+        case MOVE_TYPE_BREADTH_FIRST:
+            return grid->valid_move_positions[gridX][gridY];
             break;
     }
 
@@ -96,6 +172,9 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
                     SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
                     SDL_RenderDrawRect(renderer, &r);
                     break;
+                case GRID_OBSTACLE:
+                    SDL_SetRenderDrawColor(renderer, 32, 32, 32, 255);
+                    SDL_RenderFillRect(renderer, &r);
             }
 
             if (grid->player && (grid->player->underMouseCursor || grid->player->selected))
@@ -161,6 +240,8 @@ void grid_onmouseevent(grid_t* grid, int x, int y, Uint32 event_type)
                 {
                     grid->player->posX = grid->mouseGridX;
                     grid->player->posY = grid->mouseGridY;
+                    memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
+                    grid_compute_reachable_positions(grid, grid->player->posX, grid->player->posY, PLAYER_MOVE_DISTANCE);
                     grid->player->selected = false;
                 }
                 else

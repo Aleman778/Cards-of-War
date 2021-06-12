@@ -77,6 +77,8 @@ int main(int argc, char* argv[]) {
             
             grid_t grid;
             grid_init(&grid);
+
+            grid_random_fill(&grid);
             
             player_t player;
             player_init(&player);
@@ -94,6 +96,9 @@ int main(int argc, char* argv[]) {
             player_hand.num_cards = 8;
             
             grid.player = &player;
+            grid.grid[player.posX][player.posY] = GRID_NONE;
+            memset(grid.valid_move_positions, 0, sizeof(grid.valid_move_positions));
+            grid_compute_reachable_positions(&grid, player.posX, player.posY, PLAYER_MOVE_DISTANCE);
             
             // Setup input
             Input input;
