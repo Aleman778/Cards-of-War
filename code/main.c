@@ -74,6 +74,11 @@ int main(int argc, char* argv[]) {
             read_tmx_map_data("assets/GMTK-1.tmx", grid.grid);
             grid.tileset = IMG_LoadTexture(renderer, "assets/grass_tileset.png");
             SDL_QueryTexture(grid.tileset, NULL, NULL, &grid.tileset_width, &grid.tileset_width);
+            //for (int x = 0; x < 20; x++) {
+            //for (int y = 0; y < 10; y++) {
+            //grid.grid[x][y] = 11;
+            //}
+            //}
             
             // Setup input
             Input input;

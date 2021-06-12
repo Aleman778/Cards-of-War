@@ -163,12 +163,17 @@ void grid_render(SDL_Renderer* renderer, grid_t* grid)
             if (tile_index > 0) {
                 tile_index--; // NOTE(alexander): tiled uses 0 as null tile, first tile is 1
                 
+                
                 SDL_Rect tr;
-                tr.x = (tile_index * 16) / grid->tileset_width;
-                tr.y = (tile_index * 16) % grid->tileset_width;
+                tr.x = (tile_index % (grid->tileset_width / 16)) * 16;
+                tr.y = (tile_index / (grid->tileset_width / 16)) * 16;
                 tr.w = 16;
                 tr.h = 16;
-                SDL_RenderCopy(renderer, grid->tileset, &tr, &r);
+                int code = SDL_RenderCopy(renderer, grid->tileset, &tr, &r);
+                if (code ==0) {
+                    printf("error: %s\n", SDL_GetError());
+                    
+                }
                 
                 if (grid->player && (grid->player->underMouseCursor || grid->player->selected))
                 {

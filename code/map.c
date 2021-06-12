@@ -101,10 +101,10 @@ read_tmx_map_data(const char* filename, int map_data[GRID_SIZE_X][GRID_SIZE_Y]) 
                         if (*scan == ',') {
                             scan++;
                             
-                            tile_y++;
-                            if (tile_y >= GRID_SIZE_Y) {
-                                tile_y = 0;
-                                tile_x++;
+                            tile_x++;
+                            if (tile_x >= GRID_SIZE_X) {
+                                tile_x = 0;
+                                tile_y++;
                             }
                             //assert(tile_index < MAX_TILEMAP_SIZE && "number of tiles exceeds its limit");
                             map_data[tile_x][tile_y] = 0;
