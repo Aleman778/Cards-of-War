@@ -21,6 +21,7 @@ typedef struct
     SDL_Rect tilesetTextureRect;
     int tileIDs[5];
     struct grid* grid;
+    Player_Hand hand;
 } entity_t;
 
 entity_t* entity_init(entity_t* entity)

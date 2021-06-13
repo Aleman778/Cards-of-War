@@ -10,7 +10,7 @@
 #define WINDOW_HEIGHT 480
 #define FONT_SIZE 16
 
-#define MAX_ENTITIES 128
+#define MAX_ENTITIES 8
 
 static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 
@@ -96,6 +96,7 @@ int main(int argc, char* argv[]) {
             enemy_1->tileIDs[2] = 73;
             enemy_1->tileIDs[3] = 76;
             enemy_1->tileIDs[4] = 74;
+            init_player_hand(&enemy_1->hand);
             
             // Setup game state
             state.type = GameState_Discard_Cards;
@@ -173,7 +174,22 @@ int main(int argc, char* argv[]) {
                 
                 // Render players hand of cards
                 draw_player_cards(renderer, &player_hand, &grid, &input);
-                
+
+                if (state.type == GameState_EnemyTurn)
+                {
+                    // Enemy turn
+                    for (int i = 0; i < MAX_ENTITIES; i++)
+                    {
+                        entity_t* enemy = &entities[i];
+
+                        if (enemy && enemy->valid && !enemy->playerControlled)
+                        {
+                            //enemy_random_chase_move(enemy, &grid->entities[0]);
+                            enemy_play_random_card(enemy, player_1);
+                        }
+                    }
+                }
+
                 // Render to the screen
                 SDL_RenderPresent(renderer);
             }

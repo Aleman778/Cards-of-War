@@ -6,6 +6,7 @@ enum {
     GameState_Select_Cards,
     GameState_Turn,
     GameState_Animation,
+    GameState_EnemyTurn,
     GameState_Last,
 };
 

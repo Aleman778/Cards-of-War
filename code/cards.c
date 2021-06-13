@@ -283,6 +283,7 @@ update_player_hand(Player_Hand* player, Input* input, struct grid* grid, entity_
     
     // Discard cards
     if (state.type == GameState_Discard_Cards) {
+        state.next_state = GameState_Turn;
         if (button_was_pressed(&input->mouse_buttons[SDL_BUTTON_LEFT])) {
             // Done button
             int text_width = 50;
@@ -325,6 +326,7 @@ update_player_hand(Player_Hand* player, Input* input, struct grid* grid, entity_
     
     // Select new cards
     if (state.type == GameState_Select_Cards) {
+        state.next_state = GameState_Turn;
         if (!player->is_new_cards_initialized) {
             init_random_movement_card(&player->new_cards[0]);
             init_random_attack_card(&player->new_cards[1]);

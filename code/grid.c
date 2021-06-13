@@ -298,14 +298,8 @@ grid_perform_action(struct grid* grid, Input* input, Player_Hand* player, entity
                     
                     player->num_cards--;
                     
-                    // Enemy turn
-                    for (int i = 0; i < MAX_ENTITIES; i++)
-                    {
-                        entity_t* enemy = &grid->entities[i];
-                        
-                        if (enemy && enemy->valid && !enemy->playerControlled)
-                            enemy_random_chase_move(enemy, &grid->entities[0]);
-                    }
+                    state.type = GameState_Animation;
+                    state.next_state = GameState_EnemyTurn;
                 }
             }
             entity->selected = false;
