@@ -297,6 +297,7 @@ grid_perform_action(struct grid* grid, Input* input, Player_Hand* player, entity
                     } 
                     
                     player->num_cards--;
+                    entity->lastCardTime = SDL_GetTicks();
                     
                     state.type = GameState_Animation;
                     state.next_state = GameState_EnemyTurn;

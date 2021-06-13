@@ -165,6 +165,7 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
     if (bestCardIndex >= 0)
     {
         enemy->lastCard = enemy->hand.cards[bestCardIndex];
+        enemy->lastCardTime = SDL_GetTicks();
         enemy->hand.selected_card = bestCardIndex;
         
         int cards_right = enemy->hand.num_cards - enemy->hand.selected_card;
@@ -246,27 +247,24 @@ void render_entity(SDL_Renderer* renderer, entity_t* entity)
     
     render_entity_health_bar(renderer, entity);
     
-    if (entity->targetPosX != entity->posX || entity->targetPosY != entity->posY)
+    if (entity->targetPosX != entity->posX || entity->targetPosY != entity->posY || (entity->lastCardTime != 0 && SDL_GetTicks() - entity->lastCardTime < 2000))
     {
-        if (state.current_entity == entity)
+        v2 position = vec2(0.0f, 0.0f);
+
+        if (entity->playerControlled)
         {
-            v2 position = vec2(0.0f, 0.0f);
-            
-            if (entity->playerControlled)
-            {
-                position.x = 0.0f;
-                if (entity->posY <= 5 && entity->posX < 4)
-                    position.y = 400.0f - CARD_HEIGHT;
-            }
-            else
-            {
-                position.x = WINDOW_WIDTH - CARD_WIDTH;
-                if (entity->posY <= 5 && entity->posX >= GRID_SIZE_X - 4)
-                    position.y = 400.0f - CARD_HEIGHT;
-            }
-            
-            draw_card(renderer, &entity->lastCard, entity->grid, position, 0.0f);
+            position.x = 0.0f;
+            if (entity->posY <= 5 && entity->posX < 4)
+                position.y = 400.0f - CARD_HEIGHT;
         }
+        else
+        {
+            position.x = WINDOW_WIDTH - CARD_WIDTH;
+            if (entity->posY <= 5 && entity->posX >= GRID_SIZE_X - 4)
+                position.y = 400.0f - CARD_HEIGHT;
+        }
+
+        draw_card(renderer, &entity->lastCard, entity->grid, position, 0.0f);
     }
 }
 
@@ -360,7 +358,7 @@ void update_entity(entity_t* entity)
             entity->direction = find_direction_to_target(entity, entity->targetPosX, entity->targetPosY);
             entity_move_forward(entity);
         }
-        else if (state.type == GameState_Animation)
+        else if (state.type == GameState_Animation && SDL_GetTicks() - entity->lastCardTime > 2000)
         {
             //state.type = GameState_Select_Cards;
             //state.next_state = GameState_Turn;

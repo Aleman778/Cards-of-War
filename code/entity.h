@@ -17,6 +17,7 @@ typedef struct
     f32 maxHealth;
     int (*valid_move_positions)[GRID_SIZE_Y];
     Card lastCard;
+    int lastCardTime;
     int direction; // up = 1, right = 2, down = 3, left = 4
     SDL_Rect tilesetTextureRect;
     int tileIDs[5];
