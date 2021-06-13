@@ -11,5 +11,6 @@ enum {
 
 typedef struct {
     Game_State_Type type;
+    Game_State_Type next_state;
     entity_t* current_entity;
 } Game_State;

@@ -28,6 +28,7 @@ static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 #include "entity.c"
 
 static bool is_running = false;
+static Game_State state;
 
 int main(int argc, char* argv[]) {
     (void) argc; // Unused variable, this statement can be removed when the variable has been used elsewhere
@@ -84,6 +85,11 @@ int main(int argc, char* argv[]) {
             entity_t* enemy_1 = entity_init(&entities[num_entities++]);
             enemy_1->posX = 12;
             enemy_1->posY = 1;
+            
+            // Setup game state
+            state.type = GameState_Discard_Cards;
+            state.next_state = GameState_Turn;
+            state.current_entity = player_1;
             
             // Load tilemap
             read_tmx_map_data("assets/GMTK-1.tmx", grid.grid);
