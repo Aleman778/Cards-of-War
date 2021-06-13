@@ -52,9 +52,9 @@ bool grid_pos_walkable(int grid_val)
 }
 
 // Dir: up = 1, right = 2, down = 3, left = 4
-void _grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int x, int y, int dir, int max_distance)
+void _grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int x, int y, int dir, int max_distance, char visited_grid[GRID_SIZE_X][GRID_SIZE_Y])
 {
-    if (max_distance < 0 || entity->valid_move_positions[x][y] != 0)
+    if (max_distance < 0 || visited_grid[x][y] > max_distance)
         return;
     
     if (!grid_pos_walkable(grid->grid[x][y]))
@@ -64,16 +64,19 @@ void _grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int 
     }
     
     entity->valid_move_positions[x][y] = dir;
+    visited_grid[x][y] = max_distance;
     
-    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x + 1), grid_limit_y(y), 2, max_distance - 1);
-    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x), grid_limit_y(y + 1), 3, max_distance - 1);
-    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x - 1), grid_limit_y(y), 4, max_distance - 1);
-    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x), grid_limit_y(y - 1), 1, max_distance - 1);
+    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x + 1), grid_limit_y(y), 2, max_distance - 1, visited_grid);
+    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x), grid_limit_y(y + 1), 3, max_distance - 1, visited_grid);
+    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x - 1), grid_limit_y(y), 4, max_distance - 1, visited_grid);
+    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x), grid_limit_y(y - 1), 1, max_distance - 1, visited_grid);
 }
 
 void grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int x, int y, int max_distance)
 {
-    _grid_compute_reachable_positions(grid, entity, x, y, 0, max_distance);
+    char visited_grid[GRID_SIZE_X][GRID_SIZE_Y];
+    memset(visited_grid, 0, sizeof(visited_grid));
+    _grid_compute_reachable_positions(grid, entity, x, y, 0, max_distance, visited_grid);
     
 }
 
