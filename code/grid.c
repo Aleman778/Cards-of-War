@@ -246,7 +246,7 @@ grid_perform_action(struct grid* grid, Input* input, Player_Hand* player, entity
                     } break;
                     
                     case CardType_Attack_Cannon: {
-                        is_valid_move = true;
+                        is_valid_move = is_within_grid;
                         for (int i = 0; i < MAX_ENTITIES; i++)
                         {
                             entity_t* enemy = &grid->entities[i];
@@ -259,7 +259,7 @@ grid_perform_action(struct grid* grid, Input* input, Player_Hand* player, entity
                     } break;
                     
                     case CardType_Attack_Blast: {
-                        is_valid_move = is_within_grid;
+                        is_valid_move = true;
                         for (int i = 0; i < MAX_ENTITIES; i++)
                         {
                             entity_t* enemy = &grid->entities[i];

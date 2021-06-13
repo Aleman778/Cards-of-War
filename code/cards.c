@@ -150,7 +150,7 @@ update_player_hand(Player_Hand* player, Input* input, struct grid* grid, entity_
     }
     
     int card_space_index = 0;
-    for (int card_index = 0; card_index < num_cards; card_index++) {
+    for (int card_index = 0; card_index < player->num_cards; card_index++) {
         Card* card = &player->cards[card_index];
         v2 p = vec2((f32) (x_offset + card_spacing*card_space_index), 400.0f);
         bool hover_card = input->mouse.x > p.x &&
