@@ -17,7 +17,7 @@ enum CardType {
 };
 
 static const s32 card_type_string_len[6] = {
-    4, 9, 8, 5, 6, 5
+    4, 9, 7, 5, 6, 4
 };
 
 static const s32 card_max_attack[6] = {

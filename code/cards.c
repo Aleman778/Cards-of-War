@@ -70,7 +70,8 @@ random_f32() {
 void
 init_random_card_stats(Card* card) {
     card->range = 0;
-    if (card->type == CardType_Movement_Free) {
+    if (card->type == CardType_Movement_Free ||
+        card->type == CardType_Attack_Cannon) {
         card->range = (s32) (random_f32() * (card_max_free_movement - 2));
         card->range += 2;
     } else if (card->type == CardType_Attack_Blast) {
@@ -165,13 +166,13 @@ draw_card(SDL_Renderer* renderer, Card* card, struct grid* grid, v2 pos, f64 ang
                          SDL_FLIP_NONE);
     }
     
-    base.x += 8;
-    base.y += 8;
-    base.w -= 16;
-    base.h -= 16;
+    base.x += 12;
+    base.y += 10;
+    base.w -= 24;
+    base.h -= 18;
     
     if (card->type >= 0 && card->type < (int) array_count(title_text_textures)) {
-        s32 text_width = card_type_string_len[card->type] * FONT_SIZE;
+        s32 text_width = card_type_string_len[card->type] * 12;
         if (text_width > base.w) text_width = base.w;
         SDL_Rect rect;
         rect.x = base.x;
@@ -182,9 +183,9 @@ draw_card(SDL_Renderer* renderer, Card* card, struct grid* grid, v2 pos, f64 ang
         SDL_RenderCopy(renderer, title_text_textures[card->type], 0, &rect);
     }
     
+    base.y += 40;
+    base.h -= 40;
     if (card->range > 0) {
-        base.y += 40;
-        base.h -= 40;
         SDL_Rect tr;
         tr.x = 16;
         tr.y = 96;
@@ -195,11 +196,11 @@ draw_card(SDL_Renderer* renderer, Card* card, struct grid* grid, v2 pos, f64 ang
         dst.h = 16;
         SDL_RenderCopy(renderer, grid->tileset, &tr, &dst);
         draw_number(renderer, card->range, base.x + 20, base.y);
+        base.x += 54;
+        base.w -= 54;
     }
     
     if (card->type >= CardType_Attack_First) {
-        base.y += 40;
-        base.h -= 40;
         SDL_Rect tr;
         tr.x = 0;
         tr.y = 96;
@@ -439,7 +440,6 @@ draw_player_cards(SDL_Renderer* renderer, Player_Hand* player, struct grid* grid
         if (player->num_cards < array_count(player->cards)) {
             SDL_RenderCopy(renderer, select_one_card_texture, 0, &rect);
             
-            
             if (player->is_new_cards_initialized) {
                 v2 p1 = vec2((f32) (WINDOW_WIDTH / 2 - CARD_WIDTH - 32), 128.0f);
                 v2 p2 = vec2((f32) (WINDOW_WIDTH / 2 + 32), 128.0f);
@@ -497,8 +497,17 @@ draw_player_cards(SDL_Renderer* renderer, Player_Hand* player, struct grid* grid
     f32 angle = -60.0f/8.0f;
     f32 angle_increment = (60.0f/4.0f) / (f32) (player->num_cards - 1);
     for (int card_index = 0; card_index < player->num_cards; card_index++) {
+        if (player->is_selected && card_index == player->selected_card) {
+            continue;
+        }
         Card* card = &player->cards[card_index];
         draw_card(renderer, card, grid, player->card_pos[card_index], 0.0);
+        angle += angle_increment;
+    }
+    
+    if (player->is_selected) {
+        Card* card = &player->cards[player->selected_card];
+        draw_card(renderer, card, grid, player->card_pos[player->selected_card], 0.0);
         angle += angle_increment;
     }
 }

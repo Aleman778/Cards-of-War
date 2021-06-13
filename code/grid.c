@@ -204,7 +204,8 @@ void grid_render(SDL_Renderer* renderer, struct grid* grid)
                         }
                         SDL_RenderDrawRect(renderer, &r);
                         if (entity->selected && x == grid->mouseGridX && y == grid->mouseGridY
-                            && grid->card && grid->card->type <= CardType_Movement_Last) {
+                            && grid->card && (grid->card->type <= CardType_Movement_Last ||
+                                              grid->card->type == CardType_Attack_Cannon)) {
                             SDL_RenderFillRect(renderer, &r);
                         }
                     }
