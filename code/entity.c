@@ -135,6 +135,29 @@ void render_entity(SDL_Renderer* renderer, entity_t* entity)
     // SDL_RenderFillRect(renderer, &entity_rect);
     
     render_entity_health_bar(renderer, entity);
+
+    if (entity->targetPosX != entity->posX || entity->targetPosY != entity->posY)
+    {
+        if (state.current_entity == entity)
+        {
+            v2 position = vec2(0.0f, 0.0f);
+
+            if (entity->playerControlled)
+            {
+                position.x = 0.0f;
+                if (entity->posY <= 5 && entity->posX < 4)
+                    position.y = 400.0f - CARD_HEIGHT;
+            }
+            else
+            {
+                position.x = WINDOW_WIDTH - CARD_WIDTH;
+                if (entity->posY <= 5 && entity->posX >= GRID_SIZE_X - 4)
+                    position.y = 400.0f - CARD_HEIGHT;
+            }
+
+            draw_card(renderer, &entity->lastCard, entity->grid, position);
+        }
+    }
 }
 
 int find_direction_to_target(entity_t* entity, int targetX, int targetY)
@@ -219,10 +242,17 @@ void update_entity(entity_t* entity)
     {
         if (entity->posX != entity->targetPosX || entity->posY != entity->targetPosY)
         {
+            state.type = GameState_Animation;
+            state.current_entity = entity;
+
             lastUpdateTime = SDL_GetTicks();
 
             entity->direction = find_direction_to_target(entity, entity->targetPosX, entity->targetPosY);
             entity_move_forward(entity);
+        }
+        else if (state.type == GameState_Animation)
+        {
+            state.type = GameState_Turn;
         }
     }
 }
