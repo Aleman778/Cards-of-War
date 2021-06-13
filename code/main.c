@@ -16,11 +16,13 @@ static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 
 #include "types.h"
 #include "vecmath.h"
+#include "input.h"
 #include "cards.h"
 #include "grid.h"
 #include "entity.h"
-#include "input.h"
 #include "game_state.h"
+
+static Game_State state;
 
 #include "grid.c"
 #include "cards.c"
@@ -28,7 +30,6 @@ static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 #include "entity.c"
 
 static bool is_running = false;
-static Game_State state;
 
 int main(int argc, char* argv[]) {
     (void) argc; // Unused variable, this statement can be removed when the variable has been used elsewhere
@@ -63,13 +64,7 @@ int main(int argc, char* argv[]) {
             
             // Player Hand
             Player_Hand player_hand;
-            zero_struct(player_hand);
-            
-            // Add some random cards
-            for (int i = 0; i < 8; i++) {
-                init_random_card(&player_hand.cards[i]);
-            } 
-            player_hand.num_cards = 8;
+            init_player_hand(&player_hand);
             
             entity_t entities[MAX_ENTITIES];
             zero_struct(entities);
@@ -149,7 +144,7 @@ int main(int argc, char* argv[]) {
                 grid_render(renderer, &grid);
                 
                 // Render players hand of cards
-                draw_player_cards(renderer, &player_hand);
+                draw_player_cards(renderer, &player_hand, &grid, &input);
                 
                 // Render to the screen
                 SDL_RenderPresent(renderer);
