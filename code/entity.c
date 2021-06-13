@@ -78,7 +78,7 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
 {
     int bestCardIndex = -1;
     bool actionTaken = false;
-
+    
     // Attempt to attack the player
     for (int cardIndex = 0; cardIndex < enemy->hand.num_cards; cardIndex++)
     {
@@ -87,26 +87,26 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
         {
             enemy->grid->card = card;
             memset(enemy->valid_move_positions, 0, GRID_SIZE_BYTES);
-
+            
             grid_compute_reachable_positions(enemy->grid, enemy, enemy->posX, enemy->posY, card->range);
-
+            
             if (grid_pos_within_player_range(enemy->grid, enemy, player->posX, player->posY))
             {
                 bestCardIndex = cardIndex;
                 actionTaken = true;
-
+                
                 player->health -= (f32) card->attack;
-
+                
                 break;
             }
         }
     }
-
+    
     if (!actionTaken)
     {
         int closestDistance = 9999;
-        int targetX, targetY;
-
+        int targetX = 0, targetY = 0;
+        
         // Attempt to move closer to the player
         for (int cardIndex = 0; cardIndex < enemy->hand.num_cards; cardIndex++)
         {
@@ -116,7 +116,7 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
                 enemy->grid->card = card;
                 memset(enemy->valid_move_positions, 0, GRID_SIZE_BYTES);
                 grid_compute_reachable_positions(enemy->grid, enemy, enemy->posX, enemy->posY, card->range);
-
+                
                 for (int x = 0; x < GRID_SIZE_X; x++)
                 {
                     for (int y = 0; y < GRID_SIZE_Y; y++)
@@ -136,22 +136,22 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
                 }
             }
         }
-
+        
         if (bestCardIndex >= 0)
         {
             Card* card = &enemy->hand.cards[bestCardIndex];
-
+            
             actionTaken = true;
-
+            
             enemy->grid->card = card;
             memset(enemy->valid_move_positions, 0, GRID_SIZE_BYTES);
             grid_compute_reachable_positions(enemy->grid, enemy, enemy->posX, enemy->posY, card->range);
-
+            
             enemy->targetPosX = targetX;
             enemy->targetPosY = targetY;
         }
     }
-
+    
     // Failed to attack and to move, discard one card and redraw to simulate wasting an attack on a miss
     if (!actionTaken)
     {
@@ -160,26 +160,26 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
         else
             printf("Enemy has no cards left");
     }
-
+    
     // Discard the used card
     if (bestCardIndex >= 0)
     {
         enemy->lastCard = enemy->hand.cards[bestCardIndex];
         enemy->hand.selected_card = bestCardIndex;
-
+        
         int cards_right = enemy->hand.num_cards - enemy->hand.selected_card;
         if (cards_right > 0) {
             memmove(enemy->hand.cards + enemy->hand.selected_card,
                     enemy->hand.cards + (enemy->hand.selected_card + 1),
                     cards_right * sizeof(Card));
         }
-
+        
         enemy->hand.num_cards--;
-
+        
         if (enemy->hand.num_cards < 8)
             init_random_card(&enemy->hand.cards[enemy->hand.num_cards++]);
     }
-
+    
     state.type = GameState_Animation;
     state.next_state = GameState_Select_Cards;
 }
@@ -364,10 +364,10 @@ void update_entity(entity_t* entity)
         {
             //state.type = GameState_Select_Cards;
             //state.next_state = GameState_Turn;
-
+            
             //if (state.type == GameState_EnemyTurn state.next_state == GameState_)
             state.type = state.next_state;
-
+            
         }
     }
 }

@@ -166,10 +166,10 @@ draw_card(SDL_Renderer* renderer, Card* card, struct grid* grid, v2 pos, f64 ang
                          SDL_FLIP_NONE);
     }
     
-    base.x += 12;
-    base.y += 10;
-    base.w -= 24;
-    base.h -= 18;
+    base.x += 18;
+    base.y += 19;
+    base.w -= 34;
+    base.h -= 27;
     
     if (card->type >= 0 && card->type < (int) array_count(title_text_textures)) {
         s32 text_width = card_type_string_len[card->type] * 12;
@@ -183,8 +183,8 @@ draw_card(SDL_Renderer* renderer, Card* card, struct grid* grid, v2 pos, f64 ang
         SDL_RenderCopy(renderer, title_text_textures[card->type], 0, &rect);
     }
     
-    base.y += 40;
-    base.h -= 40;
+    base.y += 42;
+    base.h -= 42;
     if (card->range > 0) {
         SDL_Rect tr;
         tr.x = 16;
