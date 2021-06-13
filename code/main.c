@@ -105,6 +105,13 @@ int main(int argc, char* argv[]) {
             // Load tilemap
             read_tmx_map_data("assets/GMTK-1.tmx", grid.grid);
             grid.tileset = IMG_LoadTexture(renderer, "assets/grass_tileset.png");
+
+            if (!grid.tileset)
+            {
+                printf("Failed to load tileset: %s\n", IMG_GetError());
+                return -1;
+            }
+
             SDL_QueryTexture(grid.tileset, NULL, NULL, &grid.tileset_width, &grid.tileset_width);
             
             // Setup input
