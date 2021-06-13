@@ -56,12 +56,12 @@ void enemy_perform_random_move(entity_t* enemy)
 {
     memset(enemy->valid_move_positions, 0, GRID_SIZE_BYTES);
     grid_compute_reachable_positions(enemy->grid, enemy, enemy->posX, enemy->posY, PLAYER_MOVE_DISTANCE);
-
+    
     for (int i = 0; i < 1000; i++)
     {
         int x = rand() % GRID_SIZE_X;
         int y = rand() % GRID_SIZE_Y;
-
+        
         if (enemy->valid_move_positions[x][y])
         {
             enemy->targetPosX = (s32) x;
@@ -111,10 +111,10 @@ void render_entity(SDL_Renderer* renderer, entity_t* entity)
     entity_rect.y = entity->posY * GRID_ELEM_HEIGHT;
     entity_rect.w = GRID_ELEM_WIDTH;
     entity_rect.h = GRID_ELEM_HEIGHT;
-
+    
     if (entity->tileIDs[entity->direction] > 0) {
         int tile_index = entity->tileIDs[entity->direction] - 1; // NOTE(alexander): tiled uses 0 as null tile, first tile is 1
-
+        
         // Draw tile
         SDL_Rect tr;
         tr.x = (tile_index % (entity->grid->tileset_width / 16)) * 16;
@@ -135,13 +135,13 @@ void render_entity(SDL_Renderer* renderer, entity_t* entity)
     // SDL_RenderFillRect(renderer, &entity_rect);
     
     render_entity_health_bar(renderer, entity);
-
+    
     if (entity->targetPosX != entity->posX || entity->targetPosY != entity->posY)
     {
         if (state.current_entity == entity)
         {
             v2 position = vec2(0.0f, 0.0f);
-
+            
             if (entity->playerControlled)
             {
                 position.x = 0.0f;
@@ -154,7 +154,7 @@ void render_entity(SDL_Renderer* renderer, entity_t* entity)
                 if (entity->posY <= 5 && entity->posX >= GRID_SIZE_X - 4)
                     position.y = 400.0f - CARD_HEIGHT;
             }
-
+            
             draw_card(renderer, &entity->lastCard, entity->grid, position);
         }
     }
@@ -164,7 +164,7 @@ int find_direction_to_target(entity_t* entity, int targetX, int targetY)
 {
     int dir = 0;
     int counter = 0;
-
+    
     if (entity->lastCard.type == CardType_Movement_Horizontal)
     {
         if (targetX > entity->posX)
@@ -179,7 +179,7 @@ int find_direction_to_target(entity_t* entity, int targetX, int targetY)
         else
             return 1;
     }
-
+    
     while ((entity->posX != targetX || entity->posY != targetY))
     {
         counter++;
@@ -188,26 +188,26 @@ int find_direction_to_target(entity_t* entity, int targetX, int targetY)
             printf("Failed to find direction to target X = %d, Y = %d\n", targetX, targetY);
             return 0;
         }
-
+        
         dir = entity->valid_move_positions[targetX][targetY];
         switch (dir)
-            {
+        {
             case 1:
-                targetY++;
-                break;
+            targetY++;
+            break;
             case 2:
-                targetX--;
-                break;
+            targetX--;
+            break;
             case 3:
-                targetY--;
-                break;
+            targetY--;
+            break;
             case 4:
-                targetX++;
-                break;
-
+            targetX++;
+            break;
+            
             default:
-                return 0;
-            }
+            return 0;
+        }
     }
     return dir;
 }
@@ -217,42 +217,43 @@ void entity_move_forward(entity_t* entity)
     switch (entity->direction)
     {
         case 1:
-            entity->posY--;
-            break;
+        entity->posY--;
+        break;
         case 2:
-            entity->posX++;
-            break;
+        entity->posX++;
+        break;
         case 3:
-            entity->posY++;
-            break;
+        entity->posY++;
+        break;
         case 4:
-            entity->posX--;
-            break;
-
+        entity->posX--;
+        break;
+        
         default:
-            break;
+        break;
     }
 }
 
 void update_entity(entity_t* entity)
 {
     static u32 lastUpdateTime = 0;
-
+    
     if (SDL_GetTicks() - lastUpdateTime > 250)
     {
         if (entity->posX != entity->targetPosX || entity->posY != entity->targetPosY)
         {
             state.type = GameState_Animation;
             state.current_entity = entity;
-
+            
             lastUpdateTime = SDL_GetTicks();
-
+            
             entity->direction = find_direction_to_target(entity, entity->targetPosX, entity->targetPosY);
             entity_move_forward(entity);
         }
         else if (state.type == GameState_Animation)
         {
-            state.type = GameState_Turn;
+            state.type = GameState_Select_Cards;
+            state.next_state = GameState_Turn;
         }
     }
 }
