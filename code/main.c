@@ -78,12 +78,24 @@ int main(int argc, char* argv[]) {
             player_1->targetPosX = 1;
             player_1->targetPosY = 1;
             player_1->playerControlled = true;
+            player_1->grid = &grid;
+            player_1->tileIDs[0] = 0;
+            player_1->tileIDs[1] = 66;
+            player_1->tileIDs[2] = 64;
+            player_1->tileIDs[3] = 67;
+            player_1->tileIDs[4] = 65;
             
             entity_t* enemy_1 = entity_init(&entities[num_entities++]);
             enemy_1->posX = 12;
             enemy_1->posY = 1;
             enemy_1->targetPosX = 12;
             enemy_1->targetPosY = 1;
+            enemy_1->grid = &grid;
+            enemy_1->tileIDs[0] = 0;
+            enemy_1->tileIDs[1] = 75;
+            enemy_1->tileIDs[2] = 73;
+            enemy_1->tileIDs[3] = 76;
+            enemy_1->tileIDs[4] = 74;
             
             // Setup game state
             state.type = GameState_Discard_Cards;

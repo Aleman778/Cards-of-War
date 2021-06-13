@@ -5,10 +5,10 @@
 #include "vecmath.h"
 
 // Attempt to move closer to the player
-void enemy_random_chase_move(entity_t* enemy, entity_t* player, struct grid* grid)
+void enemy_random_chase_move(entity_t* enemy, entity_t* player)
 {
     memset(enemy->valid_move_positions, 0, GRID_SIZE_BYTES);
-    grid_compute_reachable_positions(grid, enemy, enemy->posX, enemy->posY, PLAYER_MOVE_DISTANCE);
+    grid_compute_reachable_positions(enemy->grid, enemy, enemy->posX, enemy->posY, PLAYER_MOVE_DISTANCE);
     bool hasMoved = false;
     
     for (int i = 0; i < 500; i++)
@@ -52,10 +52,10 @@ void enemy_random_chase_move(entity_t* enemy, entity_t* player, struct grid* gri
 }
 
 
-void enemy_perform_random_move(entity_t* enemy, struct grid* grid)
+void enemy_perform_random_move(entity_t* enemy)
 {
     memset(enemy->valid_move_positions, 0, GRID_SIZE_BYTES);
-    grid_compute_reachable_positions(grid, enemy, enemy->posX, enemy->posY, PLAYER_MOVE_DISTANCE);
+    grid_compute_reachable_positions(enemy->grid, enemy, enemy->posX, enemy->posY, PLAYER_MOVE_DISTANCE);
 
     for (int i = 0; i < 1000; i++)
     {
@@ -111,16 +111,28 @@ void render_entity(SDL_Renderer* renderer, entity_t* entity)
     entity_rect.y = entity->posY * GRID_ELEM_HEIGHT;
     entity_rect.w = GRID_ELEM_WIDTH;
     entity_rect.h = GRID_ELEM_HEIGHT;
+
+    if (entity->tileIDs[entity->direction] > 0) {
+        int tile_index = entity->tileIDs[entity->direction] - 1; // NOTE(alexander): tiled uses 0 as null tile, first tile is 1
+
+        // Draw tile
+        SDL_Rect tr;
+        tr.x = (tile_index % (entity->grid->tileset_width / 16)) * 16;
+        tr.y = (tile_index / (entity->grid->tileset_width / 16)) * 16;
+        tr.w = 16;
+        tr.h = 16;
+        SDL_RenderCopy(renderer, entity->grid->tileset, &tr, &entity_rect);
+    }
     
-    if (entity->selected)
-        SDL_SetRenderDrawColor(renderer, 200, 200, 255, 255);
-    else if (entity->underMouseCursor)
-        SDL_SetRenderDrawColor(renderer, 128, 128, 255, 255);
-    else if (entity->playerControlled)
-        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-    else
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &entity_rect);
+    // if (entity->selected)
+    //     SDL_SetRenderDrawColor(renderer, 200, 200, 255, 255);
+    // else if (entity->underMouseCursor)
+    //     SDL_SetRenderDrawColor(renderer, 128, 128, 255, 255);
+    // else if (entity->playerControlled)
+    //     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    // else
+    //     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    // SDL_RenderFillRect(renderer, &entity_rect);
     
     render_entity_health_bar(renderer, entity);
 }
@@ -177,6 +189,28 @@ int find_direction_to_target(entity_t* entity, int targetX, int targetY)
     return dir;
 }
 
+void entity_move_forward(entity_t* entity)
+{
+    switch (entity->direction)
+    {
+        case 1:
+            entity->posY--;
+            break;
+        case 2:
+            entity->posX++;
+            break;
+        case 3:
+            entity->posY++;
+            break;
+        case 4:
+            entity->posX--;
+            break;
+
+        default:
+            break;
+    }
+}
+
 void update_entity(entity_t* entity)
 {
     static u32 lastUpdateTime = 0;
@@ -187,24 +221,8 @@ void update_entity(entity_t* entity)
         {
             lastUpdateTime = SDL_GetTicks();
 
-            switch (find_direction_to_target(entity, entity->targetPosX, entity->targetPosY))
-            {
-            case 1:
-                entity->posY--;
-                break;
-            case 2:
-                entity->posX++;
-                break;
-            case 3:
-                entity->posY++;
-                break;
-            case 4:
-                entity->posX--;
-                break;
-
-            default:
-                break;
-            }
+            entity->direction = find_direction_to_target(entity, entity->targetPosX, entity->targetPosY);
+            entity_move_forward(entity);
         }
     }
 }
