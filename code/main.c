@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -71,6 +72,15 @@ int main(int argc, char* argv[]) {
             int num_entities = 0;
             grid.entities = entities;
             
+            // Load music
+            Mix_Music* music;
+            music = Mix_LoadMUS("assets/Wind-of-Battle.mp3");
+            if(!music) {
+                printf("Mix_LoadMUS: %s\n", Mix_GetError());
+            }
+            if(Mix_PlayMusic(music, -1) == -1) {
+                printf("Mix_PlayMusic: %s\n", Mix_GetError());
+            }
             
             entity_t* player_1 = entity_init(&entities[num_entities++]);
             player_1->posX = 1;

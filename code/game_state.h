@@ -1,5 +1,4 @@
 
-
 typedef s32 Game_State_Type;
 enum {
     GameState_Discard_Cards,
