@@ -80,9 +80,9 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
     bool actionTaken = false;
     
     // Attempt to attack the player
-    for (int cardIndex = 0; cardIndex < enemy->hand.num_cards; cardIndex++)
+    for (int cardIndex = 0; cardIndex < enemy->hand->num_cards; cardIndex++)
     {
-        Card* card = &enemy->hand.cards[cardIndex];
+        Card* card = &enemy->hand->cards[cardIndex];
         if (card->type >= CardType_Attack_First)
         {
             enemy->grid->card = card;
@@ -108,9 +108,9 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
         int targetX = 0, targetY = 0;
         
         // Attempt to move closer to the player
-        for (int cardIndex = 0; cardIndex < enemy->hand.num_cards; cardIndex++)
+        for (int cardIndex = 0; cardIndex < enemy->hand->num_cards; cardIndex++)
         {
-            Card* card = &enemy->hand.cards[cardIndex];
+            Card* card = &enemy->hand->cards[cardIndex];
             if (card->type <= CardType_Movement_Last)
             {
                 enemy->grid->card = card;
@@ -139,7 +139,7 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
         
         if (bestCardIndex >= 0)
         {
-            Card* card = &enemy->hand.cards[bestCardIndex];
+            Card* card = &enemy->hand->cards[bestCardIndex];
             
             actionTaken = true;
             
@@ -155,7 +155,7 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
     // Failed to attack and to move, discard one card and redraw to simulate wasting an attack on a miss
     if (!actionTaken)
     {
-        if (enemy->hand.new_cards > 0)
+        if (enemy->hand->num_cards > 0)
             bestCardIndex = 0;
         else
             printf("Enemy has no cards left");
@@ -164,21 +164,21 @@ void enemy_play_random_card(entity_t* enemy, entity_t* player)
     // Discard the used card
     if (bestCardIndex >= 0)
     {
-        enemy->lastCard = enemy->hand.cards[bestCardIndex];
+        enemy->lastCard = enemy->hand->cards[bestCardIndex];
         enemy->lastCardTime = SDL_GetTicks();
-        enemy->hand.selected_card = bestCardIndex;
+        enemy->hand->selected_card = bestCardIndex;
         
-        int cards_right = enemy->hand.num_cards - enemy->hand.selected_card;
+        int cards_right = enemy->hand->num_cards - enemy->hand->selected_card;
         if (cards_right > 0) {
-            memmove(enemy->hand.cards + enemy->hand.selected_card,
-                    enemy->hand.cards + (enemy->hand.selected_card + 1),
+            memmove(enemy->hand->cards + enemy->hand->selected_card,
+                    enemy->hand->cards + (enemy->hand->selected_card + 1),
                     cards_right * sizeof(Card));
         }
         
-        enemy->hand.num_cards--;
+        enemy->hand->num_cards--;
         
-        if (enemy->hand.num_cards < 8)
-            init_random_card(&enemy->hand.cards[enemy->hand.num_cards++]);
+        if (enemy->hand->num_cards < 8)
+            init_random_card(&enemy->hand->cards[enemy->hand->num_cards++]);
     }
     
     state.type = GameState_Animation;

@@ -96,7 +96,8 @@ int main(int argc, char* argv[]) {
             enemy_1->tileIDs[2] = 73;
             enemy_1->tileIDs[3] = 76;
             enemy_1->tileIDs[4] = 74;
-            init_player_hand(&enemy_1->hand);
+
+            enemy_1->hand = &player_hand;
             
             // Setup game state
             state.type = GameState_Discard_Cards;
