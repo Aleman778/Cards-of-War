@@ -6,6 +6,7 @@
 
 #define GRID_SIZE_X (WINDOW_WIDTH / GRID_ELEM_WIDTH)
 #define GRID_SIZE_Y (WINDOW_HEIGHT / GRID_ELEM_HEIGHT)
+#define GRID_SIZE_BYTES (GRID_SIZE_X * GRID_SIZE_Y * sizeof(int))
 
 #define PLAYER_MOVE_DISTANCE 4
 
@@ -30,7 +31,6 @@ typedef struct
 struct grid
 {
     int grid[GRID_SIZE_X][GRID_SIZE_Y];
-    int valid_move_positions[GRID_SIZE_X][GRID_SIZE_Y];
     entity_t* entities;
     int mouseGridX, mouseGridY;
     Card* card;

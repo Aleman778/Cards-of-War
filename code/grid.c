@@ -51,23 +51,30 @@ bool grid_pos_walkable(int grid_val)
     }
 }
 
-void grid_compute_reachable_positions(struct grid* grid, int x, int y, int max_distance)
+// Dir: up = 1, right = 2, down = 3, left = 4
+void _grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int x, int y, int dir, int max_distance)
 {
-    if (max_distance < 0)
+    if (max_distance < 0 || entity->valid_move_positions[x][y] != 0)
         return;
     
     if (!grid_pos_walkable(grid->grid[x][y]))
     {
-        grid->valid_move_positions[x][y] = 0;
+        entity->valid_move_positions[x][y] = 0;
         return;
     }
     
-    grid->valid_move_positions[x][y] = 1;
+    entity->valid_move_positions[x][y] = dir;
     
-    grid_compute_reachable_positions(grid, grid_limit_x(x + 1), grid_limit_y(y), max_distance - 1);
-    grid_compute_reachable_positions(grid, grid_limit_x(x), grid_limit_y(y + 1), max_distance - 1);
-    grid_compute_reachable_positions(grid, grid_limit_x(x - 1), grid_limit_y(y), max_distance - 1);
-    grid_compute_reachable_positions(grid, grid_limit_x(x), grid_limit_y(y - 1), max_distance - 1);
+    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x + 1), grid_limit_y(y), 2, max_distance - 1);
+    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x), grid_limit_y(y + 1), 3, max_distance - 1);
+    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x - 1), grid_limit_y(y), 4, max_distance - 1);
+    _grid_compute_reachable_positions(grid, entity, grid_limit_x(x), grid_limit_y(y - 1), 1, max_distance - 1);
+}
+
+void grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int x, int y, int max_distance)
+{
+    _grid_compute_reachable_positions(grid, entity, x, y, 0, max_distance);
+
 }
 
 int signum(int x)
@@ -88,7 +95,7 @@ bool grid_pos_within_player_range(struct grid* grid, entity_t* player, int gridX
         switch (grid->card->type)
         {
             case CardType_Movement_Free: {
-                return grid->valid_move_positions[gridX][gridY] > 0;
+                return player->valid_move_positions[gridX][gridY] > 0;
             } break;
             case CardType_Movement_Horizontal: {
                 if (player->posY != gridY)
@@ -133,7 +140,7 @@ bool grid_pos_within_player_range(struct grid* grid, entity_t* player, int gridX
                 //return grid->valid_move_positions[gridX][gridY] > 0;
             } break;
             case CardType_Attack_Blast: {
-                return grid->valid_move_positions[gridX][gridY] > 0;
+                return player->valid_move_positions[gridX][gridY] > 0;
             } break;
         }
     }
@@ -227,8 +234,8 @@ grid_perform_action(struct grid* grid, Input* input, Player_Hand* player, entity
                     case CardType_Movement_Vertical: {
                         is_valid_move = is_within_grid;
                         if (is_valid_move) {
-                            entity->posX = grid->mouseGridX;
-                            entity->posY = grid->mouseGridY;
+                            entity->targetPosX = grid->mouseGridX;
+                            entity->targetPosY = grid->mouseGridY;
                         }
                     } break;
                     
@@ -300,4 +307,17 @@ grid_perform_action(struct grid* grid, Input* input, Player_Hand* player, entity
     }
     
     return is_valid_move;
+}
+
+void grid_update_entities(struct grid* grid)
+{
+    for (int entityIndex = 0; entityIndex < MAX_ENTITIES; entityIndex++)
+    {
+        entity_t* entity = &grid->entities[entityIndex];
+
+        if (entity && entity->valid)
+        {
+            update_entity(entity);
+        }
+    }
 }

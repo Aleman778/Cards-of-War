@@ -210,10 +210,11 @@ update_player_hand(Player_Hand* player, Input* input, struct grid* grid, entity_
             }
             
             entity->selected = true;
-            memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
-            grid_compute_reachable_positions(grid, entity->posX, entity->posY, 
+            memset(entity->valid_move_positions, 0, GRID_SIZE_BYTES);
+            grid_compute_reachable_positions(grid, entity, entity->posX, entity->posY,
                                              card->range);
             grid->card = card;
+            entity->lastCard = *card;
         }
         
         bool discard = player->discard_cards[card_index];

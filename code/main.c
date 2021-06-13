@@ -75,11 +75,15 @@ int main(int argc, char* argv[]) {
             entity_t* player_1 = entity_init(&entities[num_entities++]);
             player_1->posX = 1;
             player_1->posY = 1;
+            player_1->targetPosX = 1;
+            player_1->targetPosY = 1;
             player_1->playerControlled = true;
             
             entity_t* enemy_1 = entity_init(&entities[num_entities++]);
             enemy_1->posX = 12;
             enemy_1->posY = 1;
+            enemy_1->targetPosX = 12;
+            enemy_1->targetPosY = 1;
             
             // Setup game state
             state.type = GameState_Discard_Cards;
@@ -141,6 +145,7 @@ int main(int argc, char* argv[]) {
                 // Rendering
                 SDL_RenderClear(renderer);
                 
+                grid_update_entities(&grid);
                 grid_render(renderer, &grid);
                 
                 // Render players hand of cards

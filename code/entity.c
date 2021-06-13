@@ -7,8 +7,8 @@
 // Attempt to move closer to the player
 void enemy_random_chase_move(entity_t* enemy, entity_t* player, struct grid* grid)
 {
-    memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
-    grid_compute_reachable_positions(grid, enemy->posX, enemy->posY, PLAYER_MOVE_DISTANCE);
+    memset(enemy->valid_move_positions, 0, GRID_SIZE_BYTES);
+    grid_compute_reachable_positions(grid, enemy, enemy->posX, enemy->posY, PLAYER_MOVE_DISTANCE);
     bool hasMoved = false;
     
     for (int i = 0; i < 500; i++)
@@ -16,7 +16,7 @@ void enemy_random_chase_move(entity_t* enemy, entity_t* player, struct grid* gri
         int x = rand() % GRID_SIZE_X;
         int y = rand() % GRID_SIZE_Y;
         
-        if (grid->valid_move_positions[x][y] && !(x == enemy->posX && y == enemy->posY))
+        if (enemy->valid_move_positions[x][y] && !(x == enemy->posX && y == enemy->posY))
         {
             v2 movePos = vec2((f32) x, (f32) y);
             v2 pos = vec2((f32) enemy->posX, (f32) enemy->posY);
@@ -25,8 +25,8 @@ void enemy_random_chase_move(entity_t* enemy, entity_t* player, struct grid* gri
             if (vec2_length_sq(vec2_sub(movePos, playerPos)) > vec2_length_sq(vec2_sub(pos, playerPos)))
                 continue;
             
-            enemy->posX = (s32) movePos.x;
-            enemy->posY = (s32) movePos.y;
+            enemy->targetPosX = (s32) movePos.x;
+            enemy->targetPosY = (s32) movePos.y;
             
             hasMoved = true;
             break;
@@ -40,10 +40,10 @@ void enemy_random_chase_move(entity_t* enemy, entity_t* player, struct grid* gri
             int x = rand() % GRID_SIZE_X;
             int y = rand() % GRID_SIZE_Y;
             
-            if (grid->valid_move_positions[x][y])
+            if (enemy->valid_move_positions[x][y])
             {
-                enemy->posX = x;
-                enemy->posY = y;
+                enemy->targetPosX = x;
+                enemy->targetPosY = y;
                 
                 break;
             }
@@ -54,17 +54,18 @@ void enemy_random_chase_move(entity_t* enemy, entity_t* player, struct grid* gri
 
 void enemy_perform_random_move(entity_t* enemy, struct grid* grid)
 {
-    memset(grid->valid_move_positions, 0, sizeof(grid->valid_move_positions));
-    grid_compute_reachable_positions(grid, enemy->posX, enemy->posY, PLAYER_MOVE_DISTANCE);
-    
+    memset(enemy->valid_move_positions, 0, GRID_SIZE_BYTES);
+    grid_compute_reachable_positions(grid, enemy, enemy->posX, enemy->posY, PLAYER_MOVE_DISTANCE);
+
     for (int i = 0; i < 1000; i++)
     {
-        int index = rand() % array_count(grid->valid_move_positions);
-        if (grid->valid_move_positions[index])
+        int x = rand() % GRID_SIZE_X;
+        int y = rand() % GRID_SIZE_Y;
+
+        if (enemy->valid_move_positions[x][y])
         {
-            v2 pos = index_to_pos(index, GRID_SIZE_X);
-            enemy->posX = (s32) pos.x;
-            enemy->posY = (s32) pos.y;
+            enemy->targetPosX = (s32) x;
+            enemy->targetPosY = (s32) y;
             
             break;
         }
@@ -122,4 +123,88 @@ void render_entity(SDL_Renderer* renderer, entity_t* entity)
     SDL_RenderFillRect(renderer, &entity_rect);
     
     render_entity_health_bar(renderer, entity);
+}
+
+int find_direction_to_target(entity_t* entity, int targetX, int targetY)
+{
+    int dir = 0;
+    int counter = 0;
+
+    if (entity->lastCard.type == CardType_Movement_Horizontal)
+    {
+        if (targetX > entity->posX)
+            return 2;
+        else
+            return 4;
+    }
+    else if (entity->lastCard.type == CardType_Movement_Vertical)
+    {
+        if (targetY > entity->posY)
+            return 3;
+        else
+            return 1;
+    }
+
+    while ((entity->posX != targetX || entity->posY != targetY))
+    {
+        counter++;
+        if (counter > 1000)
+        {
+            printf("Failed to find direction to target X = %d, Y = %d\n", targetX, targetY);
+            return 0;
+        }
+
+        dir = entity->valid_move_positions[targetX][targetY];
+        switch (dir)
+            {
+            case 1:
+                targetY++;
+                break;
+            case 2:
+                targetX--;
+                break;
+            case 3:
+                targetY--;
+                break;
+            case 4:
+                targetX++;
+                break;
+
+            default:
+                return 0;
+            }
+    }
+    return dir;
+}
+
+void update_entity(entity_t* entity)
+{
+    static u32 lastUpdateTime = 0;
+
+    if (SDL_GetTicks() - lastUpdateTime > 250)
+    {
+        if (entity->posX != entity->targetPosX || entity->posY != entity->targetPosY)
+        {
+            lastUpdateTime = SDL_GetTicks();
+
+            switch (find_direction_to_target(entity, entity->targetPosX, entity->targetPosY))
+            {
+            case 1:
+                entity->posY--;
+                break;
+            case 2:
+                entity->posX++;
+                break;
+            case 3:
+                entity->posY++;
+                break;
+            case 4:
+                entity->posX--;
+                break;
+
+            default:
+                break;
+            }
+        }
+    }
 }
