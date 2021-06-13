@@ -98,9 +98,9 @@ typedef struct {
 
 #define MAX_UINT32 0xFFFFFFFF
 
-#define epsilon32 0.0001f;
-#define pi32 3.14159265359f;
-#define half_pi32 0.5f * pi32;
-#define two_pi32 2.0f * pi32;
-#define deg_to_rad two_pi32 / 360.0f;
-#define rad_to_deg 1.0f / deg_to_rad;
+#define epsilon32 (0.0001f)
+#define pi32 (3.14159265359f)
+#define half_pi32 (0.5f * pi32)
+#define two_pi32 (2.0f * pi32)
+#define deg_to_rad (two_pi32 / 360.0f)
+#define rad_to_deg (1.0f / deg_to_rad)

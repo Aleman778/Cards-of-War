@@ -120,19 +120,20 @@ void
 draw_number(SDL_Renderer* renderer, int number, int x, int y) {
     assert(number >= 0);
     
+    const int digit_size = 12;
     int num_digits = (s32) log10(number);
     
     SDL_Rect rect;
-    rect.x = x + FONT_SIZE * num_digits;
+    rect.x = x + digit_size * num_digits;
     rect.y = y;
-    rect.w = FONT_SIZE;
+    rect.w = digit_size;
     rect.h = FONT_SIZE;
     
     for (;;) {
         int digit = number % 10;
         number /= 10;
         SDL_RenderCopy(renderer, number_textures[digit], 0, &rect);
-        rect.x -= FONT_SIZE;
+        rect.x -= digit_size;
         
         if (number == 0) {
             break;
@@ -141,7 +142,7 @@ draw_number(SDL_Renderer* renderer, int number, int x, int y) {
 }
 
 void
-draw_card(SDL_Renderer* renderer, Card* card, struct grid* grid, v2 pos) { 
+draw_card(SDL_Renderer* renderer, Card* card, struct grid* grid, v2 pos, f64 angle) { 
     SDL_Rect base;
     base.x = (s32) pos.x;
     base.y = (s32) pos.y;
@@ -149,21 +150,18 @@ draw_card(SDL_Renderer* renderer, Card* card, struct grid* grid, v2 pos) {
     base.h = CARD_HEIGHT;
     
     // Render the card
-    //if (card->type <= CardType_Movement_Last) {
-    //SDL_SetRenderDrawColor(renderer, 192, 212, 190, 255);
-    //} else {
-    //SDL_SetRenderDrawColor(renderer, 148, 153, 166, 255);
-    //}
-    //SDL_RenderDrawRect(renderer, &base);
-    //if (card->type <= CardType_Movement_Last) {
-    //SDL_SetRenderDrawColor(renderer, 192, 212, 190, 255);
-    //} else {
-    //SDL_SetRenderDrawColor(renderer, 190, 197, 212, 255);
-    //}
-    //SDL_RenderFillRect(renderer, &base);
     if (card->type >= CardType_Movement_First &&
         card->type <= CardType_Count) {
-        SDL_RenderCopy(renderer, card_textures[card->type], 0, &base);
+        SDL_Point center;
+        center.x = CARD_WIDTH / 2;
+        center.y = CARD_HEIGHT;
+        SDL_RenderCopyEx(renderer,
+                         card_textures[card->type], 
+                         0, 
+                         &base,
+                         angle,
+                         &center,
+                         SDL_FLIP_NONE);
     }
     
     base.x += 8;
@@ -358,6 +356,7 @@ update_player_hand(Player_Hand* player, Input* input, struct grid* grid, entity_
             if (selected_new_card) {
                 state.type = state.next_state;
                 state.next_state = GameState_Animation;
+                player->is_new_cards_initialized = false;
             }
         } else {
             // Done button
@@ -371,6 +370,7 @@ update_player_hand(Player_Hand* player, Input* input, struct grid* grid, entity_
             if (is_mouse_within_rect(&rect, input) && is_pressed) {
                 state.type = state.next_state;
                 state.next_state = GameState_Animation;
+                player->is_new_cards_initialized = false;
             }
         }
     }
@@ -442,8 +442,8 @@ draw_player_cards(SDL_Renderer* renderer, Player_Hand* player, struct grid* grid
             if (player->is_new_cards_initialized) {
                 v2 p1 = vec2((f32) (WINDOW_WIDTH / 2 - CARD_WIDTH - 32), 128.0f);
                 v2 p2 = vec2((f32) (WINDOW_WIDTH / 2 + 32), 128.0f);
-                draw_card(renderer, &player->new_cards[0], grid, p1);
-                draw_card(renderer, &player->new_cards[1], grid, p2);
+                draw_card(renderer, &player->new_cards[0], grid, p1, 0.0);
+                draw_card(renderer, &player->new_cards[1], grid, p2, 0.0);
                 
                 rect.x = (s32) p1.x;
                 rect.y = (s32) p1.y;
@@ -493,8 +493,11 @@ draw_player_cards(SDL_Renderer* renderer, Player_Hand* player, struct grid* grid
     }
     
     // NOTE(alexander): draw cards
+    f32 angle = -60.0f/8.0f;
+    f32 angle_increment = (60.0f/4.0f) / (f32) (player->num_cards - 1);
     for (int card_index = 0; card_index < player->num_cards; card_index++) {
         Card* card = &player->cards[card_index];
-        draw_card(renderer, card, grid, player->card_pos[card_index]);
+        draw_card(renderer, card, grid, player->card_pos[card_index], 0.0);
+        angle += angle_increment;
     }
 }

@@ -155,7 +155,7 @@ void render_entity(SDL_Renderer* renderer, entity_t* entity)
                     position.y = 400.0f - CARD_HEIGHT;
             }
             
-            draw_card(renderer, &entity->lastCard, entity->grid, position);
+            draw_card(renderer, &entity->lastCard, entity->grid, position, 0.0f);
         }
     }
 }

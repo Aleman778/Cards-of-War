@@ -74,7 +74,7 @@ void _grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int 
 void grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int x, int y, int max_distance)
 {
     _grid_compute_reachable_positions(grid, entity, x, y, 0, max_distance);
-
+    
 }
 
 int signum(int x)
@@ -193,13 +193,20 @@ void grid_render(SDL_Renderer* renderer, struct grid* grid)
                 {
                     if (grid_pos_within_player_range(grid, entity, x, y))
                     {
-                        if (entity->selected)
-                            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-                        else
+                        if (entity->selected) {
+                            if (grid->card && grid->card->type >= CardType_Attack_First) {
+                                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+                            } else {
+                                SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+                            }
+                        } else {
                             SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+                        }
                         SDL_RenderDrawRect(renderer, &r);
-                        if (entity->selected && x == grid->mouseGridX && y == grid->mouseGridY)
+                        if (entity->selected && x == grid->mouseGridX && y == grid->mouseGridY
+                            && grid->card && grid->card->type <= CardType_Movement_Last) {
                             SDL_RenderFillRect(renderer, &r);
+                        }
                     }
                 }
             }
@@ -314,7 +321,7 @@ void grid_update_entities(struct grid* grid)
     for (int entityIndex = 0; entityIndex < MAX_ENTITIES; entityIndex++)
     {
         entity_t* entity = &grid->entities[entityIndex];
-
+        
         if (entity && entity->valid)
         {
             update_entity(entity);
