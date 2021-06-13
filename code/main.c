@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
             return -1;
         }
         
-        SDL_Window* window = SDL_CreateWindow("GMTK Game Jam 2021",
+        SDL_Window* window = SDL_CreateWindow("Deckless",
                                               SDL_WINDOWPOS_UNDEFINED,
                                               SDL_WINDOWPOS_UNDEFINED,
                                               WINDOW_WIDTH, WINDOW_HEIGHT,
