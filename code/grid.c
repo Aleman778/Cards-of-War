@@ -64,7 +64,7 @@ void _grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int 
     }
     
     entity->valid_move_positions[x][y] = dir;
-    visited_grid[x][y] = max_distance;
+    visited_grid[x][y] = (char) max_distance;
     
     _grid_compute_reachable_positions(grid, entity, grid_limit_x(x + 1), grid_limit_y(y), 2, max_distance - 1, visited_grid);
     _grid_compute_reachable_positions(grid, entity, grid_limit_x(x), grid_limit_y(y + 1), 3, max_distance - 1, visited_grid);

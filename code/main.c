@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
             return -1;
         }
         
-        SDL_Window* window = SDL_CreateWindow("Deckless",
+        SDL_Window* window = SDL_CreateWindow("Cards of War",
                                               SDL_WINDOWPOS_UNDEFINED,
                                               SDL_WINDOWPOS_UNDEFINED,
                                               WINDOW_WIDTH, WINDOW_HEIGHT,
