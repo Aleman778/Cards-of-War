@@ -5,33 +5,52 @@ init_cards(SDL_Renderer* renderer) {
     SDL_Color dark = {25, 25, 25};
     SDL_Color light = {245, 245, 245};
     
+    card_textures[0] = IMG_LoadTexture(renderer, "assets/Card-Free.png");
+    card_textures[1] = IMG_LoadTexture(renderer, "assets/Card-Horizontal.png");
+    card_textures[2] = IMG_LoadTexture(renderer, "assets/Card-Vertical.png");
+    card_textures[3] = card_textures[0];
+    card_textures[4] = card_textures[0];
+    card_textures[5] = card_textures[0];
+    
     temp_surface = TTF_RenderText_Solid(main_font, "Free", dark); 
     title_text_textures[0] = SDL_CreateTextureFromSurface(renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
     
     temp_surface = TTF_RenderText_Solid(main_font, "Horizontal", dark); 
     title_text_textures[1] = SDL_CreateTextureFromSurface(renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
     
     temp_surface = TTF_RenderText_Solid(main_font, "Vertical", dark); 
     title_text_textures[2] = SDL_CreateTextureFromSurface(renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
     
     temp_surface = TTF_RenderText_Solid(main_font, "Laser", dark); 
     title_text_textures[3] = SDL_CreateTextureFromSurface(renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
     
     temp_surface = TTF_RenderText_Solid(main_font, "Cannon", dark); 
     title_text_textures[4] = SDL_CreateTextureFromSurface(renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
     
     temp_surface = TTF_RenderText_Solid(main_font, "Blast", dark); 
     title_text_textures[5] = SDL_CreateTextureFromSurface(renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
     
     temp_surface = TTF_RenderText_Solid(main_font, "Your turn, discard cards you don't want.", light); 
     discard_card_texture = SDL_CreateTextureFromSurface(renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
     
     temp_surface = TTF_RenderText_Solid(main_font, "Your turn, select one new card.", light); 
     select_one_card_texture = SDL_CreateTextureFromSurface(renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
+    
+    temp_surface = TTF_RenderText_Solid(main_font, "Your turn, you have too many cards.", light);
+    too_many_cards_texture = SDL_CreateTextureFromSurface(renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
     
     temp_surface = TTF_RenderText_Solid(main_font, "Done", light);
     done_texture = SDL_CreateTextureFromSurface(renderer, temp_surface);
-    
+    SDL_FreeSurface(temp_surface);
     
     char temp_str[2];
     temp_str[1] = '\0';
@@ -40,8 +59,6 @@ init_cards(SDL_Renderer* renderer) {
         temp_surface = TTF_RenderText_Solid(main_font, temp_str, dark); 
         number_textures[i] = SDL_CreateTextureFromSurface(renderer, temp_surface);
     }
-    
-    SDL_FreeSurface(temp_surface);
 }
 
 f32
@@ -50,8 +67,7 @@ random_f32() {
 }
 
 void
-init_random_card(Card* card) {
-    card->type = (s32) (random_f32() * CardType_Count);
+init_random_card_stats(Card* card) {
     card->range = 0;
     if (card->type == CardType_Movement_Free) {
         card->range = (s32) (random_f32() * (card_max_free_movement - 2));
@@ -69,6 +85,24 @@ init_random_card(Card* card) {
     } else {
         card->attack = 0;
     }
+}
+
+void
+init_random_card(Card* card) {
+    card->type = (s32) (random_f32() * CardType_Count);
+    init_random_card_stats(card);
+}
+
+void
+init_random_movement_card(Card* card) {
+    card->type = (s32) (random_f32() * 3);
+    init_random_card_stats(card);
+}
+
+void
+init_random_attack_card(Card* card) {
+    card->type = (s32) (random_f32() * 3) + 3;
+    init_random_card_stats(card);
 }
 
 void
@@ -115,18 +149,22 @@ draw_card(SDL_Renderer* renderer, Card* card, struct grid* grid, v2 pos) {
     base.h = CARD_HEIGHT;
     
     // Render the card
-    if (card->type <= CardType_Movement_Last) {
-        SDL_SetRenderDrawColor(renderer, 192, 212, 190, 255);
-    } else {
-        SDL_SetRenderDrawColor(renderer, 148, 153, 166, 255);
+    //if (card->type <= CardType_Movement_Last) {
+    //SDL_SetRenderDrawColor(renderer, 192, 212, 190, 255);
+    //} else {
+    //SDL_SetRenderDrawColor(renderer, 148, 153, 166, 255);
+    //}
+    //SDL_RenderDrawRect(renderer, &base);
+    //if (card->type <= CardType_Movement_Last) {
+    //SDL_SetRenderDrawColor(renderer, 192, 212, 190, 255);
+    //} else {
+    //SDL_SetRenderDrawColor(renderer, 190, 197, 212, 255);
+    //}
+    //SDL_RenderFillRect(renderer, &base);
+    if (card->type >= CardType_Movement_First &&
+        card->type <= CardType_Count) {
+        SDL_RenderCopy(renderer, card_textures[card->type], 0, &base);
     }
-    SDL_RenderDrawRect(renderer, &base);
-    if (card->type <= CardType_Movement_Last) {
-        SDL_SetRenderDrawColor(renderer, 192, 212, 190, 255);
-    } else {
-        SDL_SetRenderDrawColor(renderer, 190, 197, 212, 255);
-    }
-    SDL_RenderFillRect(renderer, &base);
     
     base.x += 8;
     base.y += 8;
@@ -284,6 +322,58 @@ update_player_hand(Player_Hand* player, Input* input, struct grid* grid, entity_
             }
         }
     }
+    
+    // Select new cards
+    if (state.type == GameState_Select_Cards) {
+        if (!player->is_new_cards_initialized) {
+            init_random_movement_card(&player->new_cards[0]);
+            init_random_attack_card(&player->new_cards[1]);
+            player->is_new_cards_initialized = true;
+        }
+        
+        b32 is_pressed = button_was_pressed(&input->mouse_buttons[SDL_BUTTON_LEFT]);
+        if (player->num_cards < array_count(player->cards)) {
+            v2 p1 = vec2((f32) (WINDOW_WIDTH / 2 - CARD_WIDTH - 32), 128.0f);
+            v2 p2 = vec2((f32) (WINDOW_WIDTH / 2 + 32), 128.0f);
+            SDL_Rect rect;
+            rect.x = (s32) p1.x;
+            rect.y = (s32) p1.y;
+            rect.w = CARD_WIDTH;
+            rect.h = CARD_HEIGHT;
+            bool selected_new_card = false;
+            if (is_mouse_within_rect(&rect, input) && is_pressed) {
+                player->cards[player->num_cards++] = player->new_cards[0];
+                selected_new_card = true;
+            }
+            
+            rect.x = (s32) p2.x;
+            rect.y = (s32) p2.y;
+            rect.w = CARD_WIDTH;
+            rect.h = CARD_HEIGHT;
+            if (is_mouse_within_rect(&rect, input) && is_pressed) {
+                player->cards[player->num_cards++] = player->new_cards[1];
+                selected_new_card = true;
+            }
+            
+            if (selected_new_card) {
+                state.type = state.next_state;
+                state.next_state = GameState_Animation;
+            }
+        } else {
+            // Done button
+            int text_width = 50;
+            SDL_Rect rect;
+            rect.x = (WINDOW_WIDTH - text_width)/2;
+            rect.y = 92;
+            rect.w = text_width;
+            rect.h = FONT_SIZE + 8;
+            
+            if (is_mouse_within_rect(&rect, input) && is_pressed) {
+                state.type = state.next_state;
+                state.next_state = GameState_Animation;
+            }
+        }
+    }
 }
 
 void
@@ -329,6 +419,77 @@ draw_player_cards(SDL_Renderer* renderer, Player_Hand* player, struct grid* grid
         rect.w -= 8;
         SDL_RenderCopy(renderer, done_texture, 0, &rect);
         
+    }
+    
+    if (state.type == GameState_Select_Cards) {
+        // Render message
+        int text_width = 360;
+        SDL_Rect rect;
+        rect.x = (WINDOW_WIDTH - text_width)/2;
+        rect.y = 64;
+        rect.w = text_width;
+        rect.h = FONT_SIZE + 8;
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &rect);
+        rect.x += 4;
+        rect.y += 4;
+        rect.h -= 8;
+        rect.w -= 8;
+        if (player->num_cards < array_count(player->cards)) {
+            SDL_RenderCopy(renderer, select_one_card_texture, 0, &rect);
+            
+            
+            if (player->is_new_cards_initialized) {
+                v2 p1 = vec2((f32) (WINDOW_WIDTH / 2 - CARD_WIDTH - 32), 128.0f);
+                v2 p2 = vec2((f32) (WINDOW_WIDTH / 2 + 32), 128.0f);
+                draw_card(renderer, &player->new_cards[0], grid, p1);
+                draw_card(renderer, &player->new_cards[1], grid, p2);
+                
+                rect.x = (s32) p1.x;
+                rect.y = (s32) p1.y;
+                rect.w = CARD_WIDTH;
+                rect.h = CARD_HEIGHT;
+                if (is_mouse_within_rect(&rect, input)) {
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                    SDL_RenderDrawRect(renderer, &rect);
+                }
+                
+                rect.x = (s32) p2.x;
+                rect.y = (s32) p2.y;
+                rect.w = CARD_WIDTH;
+                rect.h = CARD_HEIGHT;
+                if (is_mouse_within_rect(&rect, input)) {
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                    SDL_RenderDrawRect(renderer, &rect);
+                }
+            }
+        } else {
+            SDL_RenderCopy(renderer, select_one_card_texture, 0, &rect);
+            // Done button
+            text_width = 50;
+            rect.x = (WINDOW_WIDTH - text_width)/2;
+            rect.y = 92;
+            rect.w = text_width;
+            rect.h = FONT_SIZE + 8;
+            
+            if (is_mouse_within_rect(&rect, input)) {
+                if (button_is_down(&input->mouse_buttons[SDL_BUTTON_LEFT])) {
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+                } else {
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 125, 255);
+                }
+            } else {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            }
+            
+            SDL_RenderFillRect(renderer, &rect);
+            rect.x += 4;
+            rect.y += 4;
+            rect.h -= 8;
+            rect.w -= 8;
+            SDL_RenderCopy(renderer, done_texture, 0, &rect);
+            
+        }
     }
     
     // NOTE(alexander): draw cards

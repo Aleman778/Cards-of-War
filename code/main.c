@@ -105,13 +105,13 @@ int main(int argc, char* argv[]) {
             // Load tilemap
             read_tmx_map_data("assets/GMTK-1.tmx", grid.grid);
             grid.tileset = IMG_LoadTexture(renderer, "assets/grass_tileset.png");
-
+            
             if (!grid.tileset)
             {
                 printf("Failed to load tileset: %s\n", IMG_GetError());
                 return -1;
             }
-
+            
             SDL_QueryTexture(grid.tileset, NULL, NULL, &grid.tileset_width, &grid.tileset_width);
             
             // Setup input
@@ -122,7 +122,11 @@ int main(int argc, char* argv[]) {
             is_running = true;
             while (is_running) {
                 // Reset input states
-                zero_struct(input.mouse_buttons);
+                for (int button_index = 0; 
+                     button_index < array_count(input.mouse_buttons);
+                     button_index++) {
+                    input.mouse_buttons[button_index].num_half_transitions = 0;
+                }
                 
                 SDL_Event event;
                 while (SDL_PollEvent(&event)) {

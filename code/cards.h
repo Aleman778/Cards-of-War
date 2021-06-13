@@ -36,19 +36,23 @@ typedef struct {
 } Card;
 
 typedef struct {
+    Card new_cards[2];
     Card cards[16];
     v2 card_pos[16];
     bool discard_cards[16];
     s32 num_cards;
     s32 selected_card;
     b32 is_selected;
+    b32 is_new_cards_initialized;
 } Player_Hand;
 
+static SDL_Texture* card_textures[CardType_Count];
 static SDL_Texture* title_text_textures[CardType_Count];
 static SDL_Texture* symbol_textures[CardType_Count];
 static SDL_Texture* number_textures[10];
 static SDL_Texture* discard_card_texture;
 static SDL_Texture* select_one_card_texture;
+static SDL_Texture* too_many_cards_texture;
 static SDL_Texture* done_texture;
 
 
