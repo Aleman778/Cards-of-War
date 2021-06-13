@@ -59,6 +59,9 @@ int main(int argc, char* argv[]) {
             main_font = TTF_OpenFont("assets/fonts/dpcomic.ttf", FONT_SIZE);
             init_cards(renderer);
             
+            SDL_Surface* icon_surface = IMG_Load("assets/icon.png");
+            SDL_SetWindowIcon(window, icon_surface);
+            
             struct grid grid;
             grid_init(&grid);
             
@@ -96,7 +99,7 @@ int main(int argc, char* argv[]) {
             enemy_1->tileIDs[2] = 73;
             enemy_1->tileIDs[3] = 76;
             enemy_1->tileIDs[4] = 74;
-
+            
             enemy_1->hand = &player_hand;
             
             // Setup game state
@@ -175,14 +178,14 @@ int main(int argc, char* argv[]) {
                 
                 // Render players hand of cards
                 draw_player_cards(renderer, &player_hand, &grid, &input);
-
+                
                 if (state.type == GameState_EnemyTurn)
                 {
                     // Enemy turn
                     for (int i = 0; i < MAX_ENTITIES; i++)
                     {
                         entity_t* enemy = &entities[i];
-
+                        
                         if (enemy && enemy->valid && !enemy->playerControlled)
                         {
                             //enemy_random_chase_move(enemy, &grid->entities[0]);
@@ -190,7 +193,7 @@ int main(int argc, char* argv[]) {
                         }
                     }
                 }
-
+                
                 // Render to the screen
                 SDL_RenderPresent(renderer);
             }
