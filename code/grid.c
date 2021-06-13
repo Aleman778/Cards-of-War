@@ -52,7 +52,7 @@ bool grid_pos_walkable(int grid_val)
 }
 
 // Dir: up = 1, right = 2, down = 3, left = 4
-void _grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int x, int y, int dir, int max_distance, char visited_grid[GRID_SIZE_X][GRID_SIZE_Y])
+void _grid_compute_reachable_positions(struct grid* grid, entity_t* entity, int x, int y, char dir, int max_distance, char visited_grid[GRID_SIZE_X][GRID_SIZE_Y])
 {
     if (max_distance < 0 || visited_grid[x][y] > max_distance)
         return;
