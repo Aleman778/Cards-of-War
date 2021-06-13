@@ -20,6 +20,7 @@ static TTF_Font* main_font = 0; // NOTE(alexander): this is global for now
 #include "grid.h"
 #include "entity.h"
 #include "input.h"
+#include "game_state.h"
 
 #include "grid.c"
 #include "cards.c"
@@ -128,12 +129,13 @@ int main(int argc, char* argv[]) {
                         } break;
                     } 
                 }
-                
                 // Update player hand
                 update_player_hand(&player_hand, &input, &grid, player_1);
                 
                 // Move player
-                grid_perform_action(&grid, &input, &player_hand, player_1);
+                if (grid_perform_action(&grid, &input, &player_hand, player_1)) {
+                    
+                }
                 
                 // Rendering
                 SDL_RenderClear(renderer);

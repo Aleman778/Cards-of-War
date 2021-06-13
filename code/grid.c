@@ -210,17 +210,17 @@ void grid_render(SDL_Renderer* renderer, struct grid* grid)
     }
 }
 
-void 
+bool // NOTE(alexander): indicates a valid move was made
 grid_perform_action(struct grid* grid, Input* input, Player_Hand* player, entity_t* entity) {
     grid->mouseGridX = (s32) input->mouse.x / GRID_ELEM_WIDTH;
     grid->mouseGridY = (s32) input->mouse.y / GRID_ELEM_HEIGHT;
     
+    bool is_valid_move = false;
     if (player->is_selected && grid->card) {
         if (button_was_pressed(&input->mouse_buttons[SDL_BUTTON_LEFT])) {
             if (input->mouse.y < WINDOW_HEIGHT - 40) {
                 bool is_within_grid = grid_pos_within_player_range(grid, entity, grid->mouseGridX, grid->mouseGridY);
                 
-                bool is_valid_move = false;
                 switch (grid->card->type) {
                     case CardType_Movement_Free:
                     case CardType_Movement_Horizontal:
@@ -298,4 +298,6 @@ grid_perform_action(struct grid* grid, Input* input, Player_Hand* player, entity
             grid->card = 0;
         }
     }
+    
+    return is_valid_move;
 }
