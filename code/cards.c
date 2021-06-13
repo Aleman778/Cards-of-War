@@ -8,9 +8,9 @@ init_cards(SDL_Renderer* renderer) {
     card_textures[0] = IMG_LoadTexture(renderer, "assets/Card-Free.png");
     card_textures[1] = IMG_LoadTexture(renderer, "assets/Card-Horizontal.png");
     card_textures[2] = IMG_LoadTexture(renderer, "assets/Card-Vertical.png");
-    card_textures[3] = card_textures[0];
-    card_textures[4] = card_textures[0];
-    card_textures[5] = card_textures[0];
+    card_textures[3] = IMG_LoadTexture(renderer, "assets/Card-Laser.png");
+    card_textures[4] = IMG_LoadTexture(renderer, "assets/Card-Blast.png");
+    card_textures[5] = IMG_LoadTexture(renderer, "assets/Card-Cannon.png");
     
     temp_surface = TTF_RenderText_Solid(main_font, "Free", dark); 
     title_text_textures[0] = SDL_CreateTextureFromSurface(renderer, temp_surface);
