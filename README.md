@@ -1,5 +1,5 @@
 # Cards of War
-![cover.png](https://raw.githubusercontent.com/Aleman778/GMTK-Game-Jam-2021/main/cover.png)
+![cover.png](https://raw.githubusercontent.com/Aleman778/Cards-of-War/main/cover.png)
 
 Our entry for the GMTK Jam 2021 and can be found on https://aleman778.itch.io/cards-of-war.
 In this game, you control the blue tank with a goal to destroy the red enemy tank. Movements and attacks are controlled by your set of cards, the green cards are movement cards and blue cards are attack cards. There is one catch, in this game you don't construct your own deck and the cards in your hand are shared between you and the enemy. In the beginning of the game, you select cards that you want to discard, then you make your move and then the enemy makes a move. After each turn, you will select a card and the enemy also selects a card to add into the shared hand.
