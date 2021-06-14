@@ -1,4 +1,3 @@
-# Cards of War
 ![cover.png](https://raw.githubusercontent.com/Aleman778/Cards-of-War/main/cover.png)
 
 Our entry for the GMTK Jam 2021 and can be found on https://aleman778.itch.io/cards-of-war.
