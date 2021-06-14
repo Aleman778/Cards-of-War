@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
             main_font = TTF_OpenFont("assets/fonts/dpcomic.ttf", FONT_SIZE);
             init_cards(renderer);
             
-            SDL_Surface* icon_surface = IMG_Load("assets/icon.png");
+            SDL_Surface* icon_surface = IMG_Load("icon.png");
             SDL_SetWindowIcon(window, icon_surface);
             
             struct grid grid;
